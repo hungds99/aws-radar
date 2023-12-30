@@ -10,6 +10,14 @@ Vậy IAM là gì? IAM là viết tắt của Identity and Access Management. N�
 - IAM roles: là một thực thể được xác định bởi một tên và một tập hợp các quyền truy cập. Nó không có bất kỳ thông tin xác thực nào. Nó được sử dụng để cung cấp quyền truy cập cho các dịch vụ AWS khác nhau.
 - IAM policies: là một tập hợp các quyền truy cập được định nghĩa bằng cú pháp JSON. Nó được gán cho người dùng, nhóm hoặc vai trò.
 
+Khi tạo mới một tài khoản trên AWS, thì tài khoản đó được xem là tài khoản root. Nó được quyền truy cập bất kỳ tài nguyên nào trên AWS.
+
+Để phát triển dự án bạn cần tuyển thêm Dev và QC để dev và test. Vậy làm thế nào để bạn có thể tạo ra các tài khoản cho họ và gán quyền truy cập cho họ? Đó là lúc bạn cần sử dụng IAM.
+
+
+
+
+
 
 
 
