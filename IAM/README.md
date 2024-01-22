@@ -12,8 +12,6 @@ Vậy IAM là gì? IAM là viết tắt của Identity and Access Management. N�
 
 Khi tạo mới một tài khoản trên AWS, thì tài khoản đó được xem là tài khoản root. Nó được quyền truy cập bất kỳ tài nguyên nào trên AWS.
 
-Để phát triển dự án bạn cần tuyển thêm Dev và QC để dev và test. Vậy làm thế nào để bạn có thể tạo ra các tài khoản cho họ và gán quyền truy cập cho họ? Đó là lúc bạn cần sử dụng IAM.
-
 
 
 

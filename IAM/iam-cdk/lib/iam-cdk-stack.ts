@@ -87,6 +87,5 @@ export class IamCdkStack extends Stack {
     // Add the admin user to the admin group
     adminGroup.addUser(adminUser);
     adminGroup.addUser(adminUser2);
-    // ====================================================================================================
   }
 }
