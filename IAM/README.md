@@ -9,7 +9,7 @@ Vậy IAM là gì? IAM là viết tắt của Identity and Access Management. N�
 Các thành phần chính trong IAM:
 
 - IAM user: là một thực thể được xác định bởi một tên đăng nhập và mật khẩu. Người dùng này có thể được sử dụng để đăng nhập vào AWS Management Console và truy cập vào các tài nguyên AWS.
-- IAM groups:
+- IAM groups: là một tập hợp các người dùng. Nó được sử dụng để gán các quyền truy cập cho một nhóm người dùng.
 - IAM roles: Được xác định bởi một tên và một tập hợp các quyền truy cập. Nó không có bất kỳ thông tin xác thực nào và được sử dụng để cung cấp quyền truy cập .
 - IAM policies: là đơn vị nhỏ nhất trong IAM được định nghĩa bằng cú pháp JSON. Nó được gán cho user, group hoặc role.
 

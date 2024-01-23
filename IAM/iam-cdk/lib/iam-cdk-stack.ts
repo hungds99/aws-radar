@@ -48,7 +48,7 @@ export class IamCdkStack extends Stack {
       userName: 'developer2-test-user'
     });
     const developer3User = new User(this, 'developer3-test-user', {
-      userName: 'developer2-test-user'
+      userName: 'developer3-test-user'
     });
 
     // Create a developer group
