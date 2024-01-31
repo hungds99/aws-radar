@@ -1,8 +1,13 @@
 import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import {
+  AmazonLinuxGeneration,
   AmazonLinuxImage,
+  GatewayVpcEndpoint,
+  GatewayVpcEndpointAwsService,
   Instance,
   InstanceType,
+  InterfaceVpcEndpoint,
+  InterfaceVpcEndpointAwsService,
   KeyPair,
   Peer,
   Port,
@@ -11,6 +16,7 @@ import {
   UserData,
   Vpc,
 } from 'aws-cdk-lib/aws-ec2';
+import { Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 export class VpcCdkStack extends Stack {
@@ -35,13 +41,10 @@ export class VpcCdkStack extends Stack {
         },
       ],
     });
-
     vpc.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Create a user data script to install Apache HTTP server
-    const userData = UserData.forLinux({
-      shebang: '#!/bin/bash',
-    });
+    const userData = UserData.forLinux({ shebang: '#!/bin/bash' });
     userData.addCommands(
       'yum install -y httpd',
       'service httpd start',
@@ -84,10 +87,8 @@ export class VpcCdkStack extends Stack {
       vpc,
       instanceName: 'workshop-test-public-ec2',
       instanceType: new InstanceType('t2.micro'),
-      machineImage: new AmazonLinuxImage(),
-      vpcSubnets: {
-        subnets: [vpc.publicSubnets[1]],
-      },
+      machineImage: new AmazonLinuxImage({ generation: AmazonLinuxGeneration.AMAZON_LINUX_2 }),
+      vpcSubnets: { subnets: [vpc.publicSubnets[1]] },
       securityGroup: ec2PublicSecurityGroup,
       userData: userData,
       keyPair: ec2KeyPair,
@@ -112,7 +113,7 @@ export class VpcCdkStack extends Stack {
       vpc,
       instanceName: 'workshop-test-bastion-host',
       instanceType: new InstanceType('t2.micro'),
-      machineImage: new AmazonLinuxImage(),
+      machineImage: new AmazonLinuxImage({ generation: AmazonLinuxGeneration.AMAZON_LINUX_2 }),
       vpcSubnets: {
         subnets: [vpc.publicSubnets[0]],
       },
@@ -141,16 +142,38 @@ export class VpcCdkStack extends Stack {
       vpc,
       instanceName: 'workshop-test-private-ec2',
       instanceType: new InstanceType('t2.micro'),
-      machineImage: new AmazonLinuxImage(),
-      vpcSubnets: {
-        subnets: [vpc.isolatedSubnets[0]],
-      },
+      machineImage: new AmazonLinuxImage({ generation: AmazonLinuxGeneration.AMAZON_LINUX_2 }),
+      vpcSubnets: { subnets: [vpc.isolatedSubnets[0]] },
       securityGroup: ec2PrivateSecurityGroup,
       userData: userData,
       associatePublicIpAddress: false,
       keyPair: ec2KeyPair,
       requireImdsv2: true,
     });
+    // Attach a policy to the EC2 private instance
+    workshopPrivateInstance.role.attachInlinePolicy(
+      new Policy(this, 'workshop-test-private-ec2-policy', {
+        policyName: 'workshop-test-private-ec2-policy',
+        statements: [new PolicyStatement({ actions: ['s3:*'], resources: ['*'] })],
+      }),
+    );
     workshopPrivateInstance.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
+    // Create a Gateway Endpoint for S3 in the private subnet
+    const s3GatewayEndpoint = new GatewayVpcEndpoint(this, 'workshop-test-s3-endpoint', {
+      service: GatewayVpcEndpointAwsService.S3,
+      vpc,
+      subnets: [{ subnets: [vpc.isolatedSubnets[0]] }],
+    });
+    s3GatewayEndpoint.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
+    // Create a Interface Endpoint for SSM in the private subnet
+    const ssmInterfaceEndpoint = new InterfaceVpcEndpoint(this, 'workshop-test-ssm-endpoint', {
+      service: InterfaceVpcEndpointAwsService.SSM,
+      vpc,
+      subnets: { subnets: [vpc.isolatedSubnets[0]] },
+      securityGroups: [ec2PrivateSecurityGroup],
+    });
+    ssmInterfaceEndpoint.applyRemovalPolicy(RemovalPolicy.DESTROY);
   }
 }
