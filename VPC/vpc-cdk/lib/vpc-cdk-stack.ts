@@ -16,12 +16,19 @@ import {
   UserData,
   Vpc,
 } from 'aws-cdk-lib/aws-ec2';
-import { Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Effect, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
 export class VpcCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+
+    // Create a S3 bucket
+    const workshopBucket = new Bucket(this, `workshop-test-bucket`, {
+      bucketName: `workshop-1-test-bucket`,
+      versioned: true,
+    });
 
     // Create a VPC and 4 subnets (2 public, 2 private)
     const vpc = new Vpc(this, 'workshop-test-vpc', {
@@ -114,9 +121,7 @@ export class VpcCdkStack extends Stack {
       instanceName: 'workshop-test-bastion-host',
       instanceType: new InstanceType('t2.micro'),
       machineImage: new AmazonLinuxImage({ generation: AmazonLinuxGeneration.AMAZON_LINUX_2 }),
-      vpcSubnets: {
-        subnets: [vpc.publicSubnets[0]],
-      },
+      vpcSubnets: { subnets: [vpc.publicSubnets[0]] },
       securityGroup: ec2BastionSecurityGroup,
       keyPair: ec2KeyPair,
       requireImdsv2: true,
@@ -151,13 +156,19 @@ export class VpcCdkStack extends Stack {
       requireImdsv2: true,
     });
     // Attach a policy to the EC2 private instance
-    workshopPrivateInstance.role.attachInlinePolicy(
-      new Policy(this, 'workshop-test-private-ec2-policy', {
-        policyName: 'workshop-test-private-ec2-policy',
-        statements: [new PolicyStatement({ actions: ['s3:*'], resources: ['*'] })],
-      }),
-    );
+    const ec2PrivateInstancePolicy = new Policy(this, 'workshop-test-private-ec2-policy', {
+      policyName: 'workshop-test-private-ec2-policy',
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ['s3:*'],
+          resources: [workshopBucket.bucketArn, `${workshopBucket.bucketArn}/*`],
+        }),
+      ],
+    });
+    workshopPrivateInstance.role?.attachInlinePolicy(ec2PrivateInstancePolicy);
     workshopPrivateInstance.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    ec2PrivateInstancePolicy.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Create a Gateway Endpoint for S3 in the private subnet
     const s3GatewayEndpoint = new GatewayVpcEndpoint(this, 'workshop-test-s3-endpoint', {
