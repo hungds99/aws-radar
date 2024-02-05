@@ -1,4 +1,5 @@
 import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import {
   AmazonLinuxGeneration,
   AmazonLinuxImage,
@@ -29,6 +30,15 @@ export class VpcCdkStack extends Stack {
       bucketName: `workshop-1-test-bucket`,
       versioned: true,
     });
+    workshopBucket.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
+    // Create a DynamoDB table
+    const workshopTable = new Table(this, `workshop-test-table`, {
+      tableName: `workshop-test-table`,
+      partitionKey: { name: 'id', type: AttributeType.STRING },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+    });
+    workshopTable.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Create a VPC and 4 subnets (2 public, 2 private)
     const vpc = new Vpc(this, 'workshop-test-vpc', {
@@ -155,19 +165,26 @@ export class VpcCdkStack extends Stack {
       keyPair: ec2KeyPair,
       requireImdsv2: true,
     });
+    workshopPrivateInstance.applyRemovalPolicy(RemovalPolicy.DESTROY);
     // Attach a policy to the EC2 private instance
     const ec2PrivateInstancePolicy = new Policy(this, 'workshop-test-private-ec2-policy', {
       policyName: 'workshop-test-private-ec2-policy',
       statements: [
         new PolicyStatement({
+          sid: 'AllowS3Access',
           effect: Effect.ALLOW,
           actions: ['s3:*'],
           resources: [workshopBucket.bucketArn, `${workshopBucket.bucketArn}/*`],
         }),
+        new PolicyStatement({
+          sid: 'AllowDynamoDBAccess',
+          effect: Effect.ALLOW,
+          actions: ['dynamodb:*'],
+          resources: [workshopTable.tableArn],
+        }),
       ],
     });
     workshopPrivateInstance.role?.attachInlinePolicy(ec2PrivateInstancePolicy);
-    workshopPrivateInstance.applyRemovalPolicy(RemovalPolicy.DESTROY);
     ec2PrivateInstancePolicy.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Create a Gateway Endpoint for S3 in the private subnet
@@ -177,6 +194,18 @@ export class VpcCdkStack extends Stack {
       subnets: [{ subnets: [vpc.isolatedSubnets[0]] }],
     });
     s3GatewayEndpoint.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
+    // Create a Gateway Endpoint for DynamoDB in the private subnet
+    const dynamodbGatewayEndpoint = new GatewayVpcEndpoint(
+      this,
+      'workshop-test-dynamodb-endpoint',
+      {
+        service: GatewayVpcEndpointAwsService.DYNAMODB,
+        vpc,
+        subnets: [{ subnets: [vpc.isolatedSubnets[0]] }],
+      },
+    );
+    dynamodbGatewayEndpoint.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Create a Interface Endpoint for SSM in the private subnet
     const ssmInterfaceEndpoint = new InterfaceVpcEndpoint(this, 'workshop-test-ssm-endpoint', {
