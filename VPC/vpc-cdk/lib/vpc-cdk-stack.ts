@@ -10,6 +10,7 @@ import {
   InterfaceVpcEndpoint,
   InterfaceVpcEndpointAwsService,
   KeyPair,
+  NatProvider,
   Peer,
   Port,
   SecurityGroup,
@@ -19,6 +20,7 @@ import {
 } from 'aws-cdk-lib/aws-ec2';
 import { Effect, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 
 export class VpcCdkStack extends Stack {
@@ -41,6 +43,14 @@ export class VpcCdkStack extends Stack {
     });
     workshopTable.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
+    // Create a Parameter Store with 1 parameter secret and 1 parameter string
+    const workshopPublicKeyParam = new StringParameter(this, 'workshop-public-key-param', {
+      parameterName: '/workshop/public-key',
+      stringValue: 'AAAAB3NzaC1yc2EAAAADAQABAAABgQDZ',
+      description: 'Public key for workshop',
+    });
+    workshopPublicKeyParam.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
     // Create a VPC and 4 subnets (2 public, 2 private)
     const vpc = new Vpc(this, 'workshop-test-vpc', {
       vpcName: 'workshop-test-vpc',
@@ -55,9 +65,12 @@ export class VpcCdkStack extends Stack {
         {
           cidrMask: 24,
           name: 'workshop-test-private',
-          subnetType: SubnetType.PRIVATE_ISOLATED,
+          subnetType: SubnetType.PRIVATE_WITH_EGRESS,
         },
       ],
+      natGateways: 1,
+      natGatewayProvider: NatProvider.gateway(),
+      natGatewaySubnets: { subnetType: SubnetType.PUBLIC, availabilityZones: ['ap-southeast-1a'] },
     });
     vpc.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
@@ -159,7 +172,7 @@ export class VpcCdkStack extends Stack {
       instanceName: 'workshop-test-private-ec2',
       instanceType: new InstanceType('t2.micro'),
       machineImage: new AmazonLinuxImage({ generation: AmazonLinuxGeneration.AMAZON_LINUX_2 }),
-      vpcSubnets: { subnets: [vpc.isolatedSubnets[0]] },
+      vpcSubnets: { subnets: [vpc.privateSubnets[0]] },
       securityGroup: ec2PrivateSecurityGroup,
       userData: userData,
       associatePublicIpAddress: false,
@@ -183,6 +196,12 @@ export class VpcCdkStack extends Stack {
           actions: ['dynamodb:*'],
           resources: [workshopTable.tableArn],
         }),
+        new PolicyStatement({
+          sid: 'AllowParameterStoreAccess',
+          effect: Effect.ALLOW,
+          actions: ['ssm:GetParameter'],
+          resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/workshop/public-key`],
+        }),
       ],
     });
     workshopPrivateInstance.role?.attachInlinePolicy(ec2PrivateInstancePolicy);
@@ -192,7 +211,7 @@ export class VpcCdkStack extends Stack {
     const s3GatewayEndpoint = new GatewayVpcEndpoint(this, 'workshop-test-s3-endpoint', {
       service: GatewayVpcEndpointAwsService.S3,
       vpc,
-      subnets: [{ subnets: [vpc.isolatedSubnets[0]] }],
+      subnets: [{ subnets: [vpc.privateSubnets[0]] }],
     });
     s3GatewayEndpoint.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
@@ -203,7 +222,7 @@ export class VpcCdkStack extends Stack {
       {
         service: GatewayVpcEndpointAwsService.DYNAMODB,
         vpc,
-        subnets: [{ subnets: [vpc.isolatedSubnets[0]] }],
+        subnets: [{ subnets: [vpc.privateSubnets[0]] }],
       },
     );
     dynamodbGatewayEndpoint.applyRemovalPolicy(RemovalPolicy.DESTROY);
@@ -212,7 +231,7 @@ export class VpcCdkStack extends Stack {
     const ssmInterfaceEndpoint = new InterfaceVpcEndpoint(this, 'workshop-test-ssm-endpoint', {
       service: InterfaceVpcEndpointAwsService.SSM,
       vpc,
-      subnets: { subnets: [vpc.isolatedSubnets[0]] },
+      subnets: { subnets: [vpc.privateSubnets[0]] },
       securityGroups: [ec2PrivateSecurityGroup],
     });
     ssmInterfaceEndpoint.applyRemovalPolicy(RemovalPolicy.DESTROY);
