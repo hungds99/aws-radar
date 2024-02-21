@@ -29,8 +29,9 @@ export class VpcCdkStack extends Stack {
     const workshopBucket = new Bucket(this, `workshop-test-bucket`, {
       bucketName: `workshop-1-test-bucket`,
       versioned: true,
+      autoDeleteObjects: true,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
-    workshopBucket.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Create a DynamoDB table
     const workshopTable = new Table(this, `workshop-test-table`, {
