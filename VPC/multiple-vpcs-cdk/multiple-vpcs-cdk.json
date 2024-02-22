@@ -1,0 +1,1633 @@
+ID:  MultipleVpcsCdkStack
+{
+  "Resources": {
+    "workshoptestbucketA81CA6D4": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "workshop-1-test-bucket",
+        "Tags": [
+          {
+            "Key": "aws-cdk:auto-delete-objects",
+            "Value": "true"
+          }
+        ],
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-bucket/Resource"
+      }
+    },
+    "workshoptestbucketPolicy6B3F3B41": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "workshoptestbucketA81CA6D4"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:DeleteObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:PutBucketPolicy"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+                    "Arn"
+                  ]
+                }
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "workshoptestbucketA81CA6D4",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "workshoptestbucketA81CA6D4",
+                          "Arn"
+                        ]
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-bucket/Policy/Resource"
+      }
+    },
+    "workshoptestbucketAutoDeleteObjectsCustomResource0123855B": {
+      "Type": "Custom::S3AutoDeleteObjects",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+            "Arn"
+          ]
+        },
+        "BucketName": {
+          "Ref": "workshoptestbucketA81CA6D4"
+        }
+      },
+      "DependsOn": [
+        "workshoptestbucketPolicy6B3F3B41"
+      ],
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-bucket/AutoDeleteObjectsCustomResource/Default"
+      }
+    },
+    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role"
+      }
+    },
+    "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+          },
+          "S3Key": "b7f33614a69548d6bafe224d751a7ef238cde19097415e553fe8b63a4c8fd8a6.zip"
+        },
+        "Timeout": 900,
+        "MemorySize": 128,
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs18.x",
+        "Description": {
+          "Fn::Join": [
+            "",
+            [
+              "Lambda function for auto-deleting objects in ",
+              {
+                "Ref": "workshoptestbucketA81CA6D4"
+              },
+              " S3 bucket."
+            ]
+          ]
+        }
+      },
+      "DependsOn": [
+        "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler",
+        "aws:asset:path": "asset.b7f33614a69548d6bafe224d751a7ef238cde19097415e553fe8b63a4c8fd8a6",
+        "aws:asset:property": "Code"
+      }
+    },
+    "workshoptesttable87B4813A": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          }
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          }
+        ],
+        "TableName": "workshop-test-table"
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-table/Resource"
+      }
+    },
+    "workshoppublickeyparam5D8E64D8": {
+      "Type": "AWS::SSM::Parameter",
+      "Properties": {
+        "Description": "Public key for workshop",
+        "Name": "/workshop/public-key",
+        "Type": "String",
+        "Value": "AAAAB3NzaC1yc2EAAAADAQABAAABgQDZ"
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-public-key-param/Resource"
+      }
+    },
+    "workshoptestvpc79AB4CCD": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "InstanceTenancy": "default",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "workshop-test-vpc"
+          }
+        ]
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/Resource"
+      }
+    },
+    "workshoptestvpcworkshoptestpublicSubnet1Subnet9EAB1ABF": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": "ap-southeast-1a",
+        "CidrBlock": "10.0.0.0/24",
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "workshop-test-public"
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Public"
+          },
+          {
+            "Key": "Name",
+            "Value": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet1"
+          }
+        ],
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet1/Subnet"
+      }
+    },
+    "workshoptestvpcworkshoptestpublicSubnet1RouteTable44ED5DCE": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet1"
+          }
+        ],
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet1/RouteTable"
+      }
+    },
+    "workshoptestvpcworkshoptestpublicSubnet1RouteTableAssociationAE52C56C": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "workshoptestvpcworkshoptestpublicSubnet1RouteTable44ED5DCE"
+        },
+        "SubnetId": {
+          "Ref": "workshoptestvpcworkshoptestpublicSubnet1Subnet9EAB1ABF"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet1/RouteTableAssociation"
+      }
+    },
+    "workshoptestvpcworkshoptestpublicSubnet1DefaultRoute44E2DB9A": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "workshoptestvpcIGW05998DF0"
+        },
+        "RouteTableId": {
+          "Ref": "workshoptestvpcworkshoptestpublicSubnet1RouteTable44ED5DCE"
+        }
+      },
+      "DependsOn": [
+        "workshoptestvpcVPCGWCC1A67A5"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet1/DefaultRoute"
+      }
+    },
+    "workshoptestvpcworkshoptestpublicSubnet1EIPC66010AA": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet1"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet1/EIP"
+      }
+    },
+    "workshoptestvpcworkshoptestpublicSubnet1NATGatewayD946A9FC": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "workshoptestvpcworkshoptestpublicSubnet1EIPC66010AA",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "workshoptestvpcworkshoptestpublicSubnet1Subnet9EAB1ABF"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet1"
+          }
+        ]
+      },
+      "DependsOn": [
+        "workshoptestvpcworkshoptestpublicSubnet1DefaultRoute44E2DB9A",
+        "workshoptestvpcworkshoptestpublicSubnet1RouteTableAssociationAE52C56C"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet1/NATGateway"
+      }
+    },
+    "workshoptestvpcworkshoptestpublicSubnet2Subnet7766CE6F": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": "ap-southeast-1b",
+        "CidrBlock": "10.0.1.0/24",
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "workshop-test-public"
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Public"
+          },
+          {
+            "Key": "Name",
+            "Value": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet2"
+          }
+        ],
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet2/Subnet"
+      }
+    },
+    "workshoptestvpcworkshoptestpublicSubnet2RouteTableD3E3B050": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet2"
+          }
+        ],
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet2/RouteTable"
+      }
+    },
+    "workshoptestvpcworkshoptestpublicSubnet2RouteTableAssociation38D87D05": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "workshoptestvpcworkshoptestpublicSubnet2RouteTableD3E3B050"
+        },
+        "SubnetId": {
+          "Ref": "workshoptestvpcworkshoptestpublicSubnet2Subnet7766CE6F"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet2/RouteTableAssociation"
+      }
+    },
+    "workshoptestvpcworkshoptestpublicSubnet2DefaultRoute608A4EB5": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "workshoptestvpcIGW05998DF0"
+        },
+        "RouteTableId": {
+          "Ref": "workshoptestvpcworkshoptestpublicSubnet2RouteTableD3E3B050"
+        }
+      },
+      "DependsOn": [
+        "workshoptestvpcVPCGWCC1A67A5"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-publicSubnet2/DefaultRoute"
+      }
+    },
+    "workshoptestvpcworkshoptestprivateSubnet1Subnet5979AE93": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": "ap-southeast-1a",
+        "CidrBlock": "10.0.2.0/24",
+        "MapPublicIpOnLaunch": false,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "workshop-test-private"
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Private"
+          },
+          {
+            "Key": "Name",
+            "Value": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet1"
+          }
+        ],
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet1/Subnet"
+      }
+    },
+    "workshoptestvpcworkshoptestprivateSubnet1RouteTable03F35889": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet1"
+          }
+        ],
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet1/RouteTable"
+      }
+    },
+    "workshoptestvpcworkshoptestprivateSubnet1RouteTableAssociation5DCBA502": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "workshoptestvpcworkshoptestprivateSubnet1RouteTable03F35889"
+        },
+        "SubnetId": {
+          "Ref": "workshoptestvpcworkshoptestprivateSubnet1Subnet5979AE93"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet1/RouteTableAssociation"
+      }
+    },
+    "workshoptestvpcworkshoptestprivateSubnet1DefaultRouteBD071A59": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "workshoptestvpcworkshoptestpublicSubnet1NATGatewayD946A9FC"
+        },
+        "RouteTableId": {
+          "Ref": "workshoptestvpcworkshoptestprivateSubnet1RouteTable03F35889"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet1/DefaultRoute"
+      }
+    },
+    "workshoptestvpcworkshoptestprivateSubnet2Subnet8E36BCDD": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": "ap-southeast-1b",
+        "CidrBlock": "10.0.3.0/24",
+        "MapPublicIpOnLaunch": false,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "workshop-test-private"
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Private"
+          },
+          {
+            "Key": "Name",
+            "Value": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet2"
+          }
+        ],
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet2/Subnet"
+      }
+    },
+    "workshoptestvpcworkshoptestprivateSubnet2RouteTableCADFD736": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet2"
+          }
+        ],
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet2/RouteTable"
+      }
+    },
+    "workshoptestvpcworkshoptestprivateSubnet2RouteTableAssociation56FFB9D5": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "workshoptestvpcworkshoptestprivateSubnet2RouteTableCADFD736"
+        },
+        "SubnetId": {
+          "Ref": "workshoptestvpcworkshoptestprivateSubnet2Subnet8E36BCDD"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet2/RouteTableAssociation"
+      }
+    },
+    "workshoptestvpcworkshoptestprivateSubnet2DefaultRoute55CD4AD7": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "workshoptestvpcworkshoptestpublicSubnet1NATGatewayD946A9FC"
+        },
+        "RouteTableId": {
+          "Ref": "workshoptestvpcworkshoptestprivateSubnet2RouteTableCADFD736"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/workshop-test-privateSubnet2/DefaultRoute"
+      }
+    },
+    "workshoptestvpcIGW05998DF0": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "workshop-test-vpc"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/IGW"
+      }
+    },
+    "workshoptestvpcVPCGWCC1A67A5": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "workshoptestvpcIGW05998DF0"
+        },
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/VPCGW"
+      }
+    },
+    "workshoptestvpcRestrictDefaultSecurityGroupCustomResourceFFCD9C7B": {
+      "Type": "Custom::VpcRestrictDefaultSG",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "CustomVpcRestrictDefaultSGCustomResourceProviderHandlerDC833E5E",
+            "Arn"
+          ]
+        },
+        "DefaultSecurityGroupId": {
+          "Fn::GetAtt": [
+            "workshoptestvpc79AB4CCD",
+            "DefaultSecurityGroup"
+          ]
+        },
+        "Account": {
+          "Ref": "AWS::AccountId"
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-vpc/RestrictDefaultSecurityGroupCustomResource/Default"
+      }
+    },
+    "CustomVpcRestrictDefaultSGCustomResourceProviderRole26592FE0": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+          }
+        ],
+        "Policies": [
+          {
+            "PolicyName": "Inline",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:AuthorizeSecurityGroupIngress",
+                    "ec2:AuthorizeSecurityGroupEgress",
+                    "ec2:RevokeSecurityGroupIngress",
+                    "ec2:RevokeSecurityGroupEgress"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        "",
+                        [
+                          "arn:",
+                          {
+                            "Ref": "AWS::Partition"
+                          },
+                          ":ec2:",
+                          {
+                            "Ref": "AWS::Region"
+                          },
+                          ":",
+                          {
+                            "Ref": "AWS::AccountId"
+                          },
+                          ":security-group/",
+                          {
+                            "Fn::GetAtt": [
+                              "workshoptestvpc79AB4CCD",
+                              "DefaultSecurityGroup"
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/Custom::VpcRestrictDefaultSGCustomResourceProvider/Role"
+      }
+    },
+    "CustomVpcRestrictDefaultSGCustomResourceProviderHandlerDC833E5E": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+          },
+          "S3Key": "dd5711540f04e06aa955d7f4862fc04e8cdea464cb590dae91ed2976bb78098e.zip"
+        },
+        "Timeout": 900,
+        "MemorySize": 128,
+        "Handler": "__entrypoint__.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "CustomVpcRestrictDefaultSGCustomResourceProviderRole26592FE0",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs18.x",
+        "Description": "Lambda function for removing all inbound/outbound rules from the VPC default security group"
+      },
+      "DependsOn": [
+        "CustomVpcRestrictDefaultSGCustomResourceProviderRole26592FE0"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/Custom::VpcRestrictDefaultSGCustomResourceProvider/Handler",
+        "aws:asset:path": "asset.dd5711540f04e06aa955d7f4862fc04e8cdea464cb590dae91ed2976bb78098e",
+        "aws:asset:property": "Code"
+      }
+    },
+    "workshoptestpublicsg461C0730": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for public EC2 instances",
+        "GroupName": "workshop-test-public-sg",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1"
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow HTTPS access from the world",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow HTTP access from the world",
+            "FromPort": 80,
+            "IpProtocol": "tcp",
+            "ToPort": 80
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow SSH access from the world",
+            "FromPort": 22,
+            "IpProtocol": "tcp",
+            "ToPort": 22
+          }
+        ],
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-public-sg/Resource"
+      }
+    },
+    "workshoptestpublicec2InstanceRole20C13458": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "workshop-test-public-ec2"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-public-ec2/InstanceRole/Resource"
+      }
+    },
+    "workshoptestpublicec2InstanceProfileED8480CB": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "workshoptestpublicec2InstanceRole20C13458"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-public-ec2/InstanceProfile"
+      }
+    },
+    "workshoptestpublicec2571A3230": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "AvailabilityZone": "ap-southeast-1b",
+        "IamInstanceProfile": {
+          "Ref": "workshoptestpublicec2InstanceProfileED8480CB"
+        },
+        "ImageId": {
+          "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter"
+        },
+        "InstanceType": "t2.micro",
+        "KeyName": "workshop-test-key-pair",
+        "LaunchTemplate": {
+          "LaunchTemplateName": "MultipleVpcsCdkStackworkshoptestpublicec2LaunchTemplate9CE87770",
+          "Version": {
+            "Fn::GetAtt": [
+              "workshoptestpublicec2LaunchTemplateD07A9FF9",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "SecurityGroupIds": [
+          {
+            "Fn::GetAtt": [
+              "workshoptestpublicsg461C0730",
+              "GroupId"
+            ]
+          }
+        ],
+        "SubnetId": {
+          "Ref": "workshoptestvpcworkshoptestpublicSubnet2Subnet7766CE6F"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "workshop-test-public-ec2"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": "#!/bin/bash\nyum install -y httpd\nservice httpd start\necho \"<h1>Hello, World from $(hostname -f)!</h1>\" > /var/www/html/index.html"
+        }
+      },
+      "DependsOn": [
+        "workshoptestpublicec2InstanceRole20C13458"
+      ],
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-public-ec2/Resource"
+      }
+    },
+    "workshoptestpublicec2LaunchTemplateD07A9FF9": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateData": {
+          "MetadataOptions": {
+            "HttpTokens": "required"
+          }
+        },
+        "LaunchTemplateName": "MultipleVpcsCdkStackworkshoptestpublicec2LaunchTemplate9CE87770"
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-public-ec2/LaunchTemplate"
+      }
+    },
+    "workshoptestbastionsgFFD1FADE": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for the bastion host",
+        "GroupName": "workshop-test-bastion-sg",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1"
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow SSH access from the world",
+            "FromPort": 22,
+            "IpProtocol": "tcp",
+            "ToPort": 22
+          }
+        ],
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-bastion-sg/Resource"
+      }
+    },
+    "workshoptestbastionhostInstanceRole1EF0B89B": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "workshop-test-bastion-host"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-bastion-host/InstanceRole/Resource"
+      }
+    },
+    "workshoptestbastionhostInstanceProfile5DF1C788": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "workshoptestbastionhostInstanceRole1EF0B89B"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-bastion-host/InstanceProfile"
+      }
+    },
+    "workshoptestbastionhost3C601FDF": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "AvailabilityZone": "ap-southeast-1a",
+        "IamInstanceProfile": {
+          "Ref": "workshoptestbastionhostInstanceProfile5DF1C788"
+        },
+        "ImageId": {
+          "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter"
+        },
+        "InstanceType": "t2.micro",
+        "KeyName": "workshop-test-key-pair",
+        "LaunchTemplate": {
+          "LaunchTemplateName": "MultipleVpcsCdkStackworkshoptestbastionhostLaunchTemplate09CD3C77",
+          "Version": {
+            "Fn::GetAtt": [
+              "workshoptestbastionhostLaunchTemplate010A8E14",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "SecurityGroupIds": [
+          {
+            "Fn::GetAtt": [
+              "workshoptestbastionsgFFD1FADE",
+              "GroupId"
+            ]
+          }
+        ],
+        "SubnetId": {
+          "Ref": "workshoptestvpcworkshoptestpublicSubnet1Subnet9EAB1ABF"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "workshop-test-bastion-host"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": "#!/bin/bash"
+        }
+      },
+      "DependsOn": [
+        "workshoptestbastionhostInstanceRole1EF0B89B"
+      ],
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-bastion-host/Resource"
+      }
+    },
+    "workshoptestbastionhostLaunchTemplate010A8E14": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateData": {
+          "MetadataOptions": {
+            "HttpTokens": "required"
+          }
+        },
+        "LaunchTemplateName": "MultipleVpcsCdkStackworkshoptestbastionhostLaunchTemplate09CD3C77"
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-bastion-host/LaunchTemplate"
+      }
+    },
+    "workshoptestprivatesgE6867F86": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for private EC2 instances",
+        "GroupName": "workshop-test-private-sg",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1"
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": {
+              "Fn::GetAtt": [
+                "workshoptestvpc79AB4CCD",
+                "CidrBlock"
+              ]
+            },
+            "Description": {
+              "Fn::Join": [
+                "",
+                [
+                  "from ",
+                  {
+                    "Fn::GetAtt": [
+                      "workshoptestvpc79AB4CCD",
+                      "CidrBlock"
+                    ]
+                  },
+                  ":443"
+                ]
+              ]
+            },
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443
+          }
+        ],
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-private-sg/Resource"
+      }
+    },
+    "workshoptestprivatesgfromMultipleVpcsCdkStackworkshoptestbastionsg0B6386A122EAD7F6E5": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "Description": "Allow SSH access from the bastion host",
+        "FromPort": 22,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "workshoptestprivatesgE6867F86",
+            "GroupId"
+          ]
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "workshoptestbastionsgFFD1FADE",
+            "GroupId"
+          ]
+        },
+        "ToPort": 22
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-private-sg/from MultipleVpcsCdkStackworkshoptestbastionsg0B6386A1:22"
+      }
+    },
+    "workshoptestprivateec2InstanceRole6796930C": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "workshop-test-private-ec2"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-private-ec2/InstanceRole/Resource"
+      }
+    },
+    "workshoptestprivateec2InstanceProfile2388631D": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "workshoptestprivateec2InstanceRole6796930C"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-private-ec2/InstanceProfile"
+      }
+    },
+    "workshoptestprivateec2EE8CDEB3": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "AvailabilityZone": "ap-southeast-1a",
+        "IamInstanceProfile": {
+          "Ref": "workshoptestprivateec2InstanceProfile2388631D"
+        },
+        "ImageId": {
+          "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter"
+        },
+        "InstanceType": "t2.micro",
+        "KeyName": "workshop-test-key-pair",
+        "LaunchTemplate": {
+          "LaunchTemplateName": "MultipleVpcsCdkStackworkshoptestprivateec2LaunchTemplate5B7166E0",
+          "Version": {
+            "Fn::GetAtt": [
+              "workshoptestprivateec2LaunchTemplate862A67D4",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": false,
+            "DeviceIndex": "0",
+            "GroupSet": [
+              {
+                "Fn::GetAtt": [
+                  "workshoptestprivatesgE6867F86",
+                  "GroupId"
+                ]
+              }
+            ],
+            "SubnetId": {
+              "Ref": "workshoptestvpcworkshoptestprivateSubnet1Subnet5979AE93"
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "workshop-test-private-ec2"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": "#!/bin/bash\nyum install -y httpd\nservice httpd start\necho \"<h1>Hello, World from $(hostname -f)!</h1>\" > /var/www/html/index.html"
+        }
+      },
+      "DependsOn": [
+        "workshoptestprivateec2InstanceRole6796930C"
+      ],
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-private-ec2/Resource"
+      }
+    },
+    "workshoptestprivateec2LaunchTemplate862A67D4": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateData": {
+          "MetadataOptions": {
+            "HttpTokens": "required"
+          }
+        },
+        "LaunchTemplateName": "MultipleVpcsCdkStackworkshoptestprivateec2LaunchTemplate5B7166E0"
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-private-ec2/LaunchTemplate"
+      }
+    },
+    "workshoptestprivateec2policyFD14A484": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "workshoptestbucketA81CA6D4",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "workshoptestbucketA81CA6D4",
+                          "Arn"
+                        ]
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ],
+              "Sid": "AllowS3Access"
+            },
+            {
+              "Action": "dynamodb:*",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "workshoptesttable87B4813A",
+                  "Arn"
+                ]
+              },
+              "Sid": "AllowDynamoDBAccess"
+            },
+            {
+              "Action": "ssm:GetParameter",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":parameter/workshop/public-key"
+                  ]
+                ]
+              },
+              "Sid": "AllowParameterStoreAccess"
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "workshop-test-private-ec2-policy",
+        "Roles": [
+          {
+            "Ref": "workshoptestprivateec2InstanceRole6796930C"
+          }
+        ]
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-private-ec2-policy/Resource"
+      }
+    },
+    "workshoptests3endpointC05256CD": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "RouteTableIds": [
+          {
+            "Ref": "workshoptestvpcworkshoptestprivateSubnet1RouteTable03F35889"
+          }
+        ],
+        "ServiceName": {
+          "Fn::Join": [
+            "",
+            [
+              "com.amazonaws.",
+              {
+                "Ref": "AWS::Region"
+              },
+              ".s3"
+            ]
+          ]
+        },
+        "VpcEndpointType": "Gateway",
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-s3-endpoint/Resource"
+      }
+    },
+    "workshoptestdynamodbendpoint2A76E83A": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "RouteTableIds": [
+          {
+            "Ref": "workshoptestvpcworkshoptestprivateSubnet1RouteTable03F35889"
+          }
+        ],
+        "ServiceName": {
+          "Fn::Join": [
+            "",
+            [
+              "com.amazonaws.",
+              {
+                "Ref": "AWS::Region"
+              },
+              ".dynamodb"
+            ]
+          ]
+        },
+        "VpcEndpointType": "Gateway",
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-dynamodb-endpoint/Resource"
+      }
+    },
+    "workshoptestssmendpoint96FCD599": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "PrivateDnsEnabled": true,
+        "SecurityGroupIds": [
+          {
+            "Fn::GetAtt": [
+              "workshoptestprivatesgE6867F86",
+              "GroupId"
+            ]
+          }
+        ],
+        "ServiceName": {
+          "Fn::Join": [
+            "",
+            [
+              "com.amazonaws.",
+              {
+                "Ref": "AWS::Region"
+              },
+              ".ssm"
+            ]
+          ]
+        },
+        "SubnetIds": [
+          {
+            "Ref": "workshoptestvpcworkshoptestprivateSubnet1Subnet5979AE93"
+          }
+        ],
+        "VpcEndpointType": "Interface",
+        "VpcId": {
+          "Ref": "workshoptestvpc79AB4CCD"
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/workshop-test-ssm-endpoint/Resource"
+      }
+    },
+    "CDKMetadata": {
+      "Type": "AWS::CDK::Metadata",
+      "Properties": {
+        "Analytics": "v2:deflate64:H4sIAAAAAAAA/1VSTYvCMBD9Ld5j1u1e9qpFpLAspYrXZZqOGm0nJR9KKf3vm5raWgjMm5fJm8dMIv4ZRXy1gIdZiuK2LGXO270FcWOe+mvNF283TtzQsvhEAwohVaUUzUSHvGNFQ1CpwuscIC+xL3iCjhlT9eJa0jkFDRVa1P31mHQMRcTbYy16+pjGLHW5V927nIKDCWXKWRw7BH7i1sYoIcFKRWNxD7ZJ2odfsDuw+ICGpVrePZyEE/JOPH4VBCdDtrZ+NpcKybI9CqelbXZaufrpYUYkZCyQwCA54R9wJC4HrOoSgqfZu4TOGo1hQz8/ii0VtZJkByNj+vR5AoFvNR2T4GecqTCVV3z1T7U6SU9NqxuW1rHYGauqDI1yOhid8OzKa9xlgXoDBpkfM1r/Xc5+pez98Wy/saJC9qvoGKkC+dV83D+/uT+rxdVIudSOrKyQZyH+Ayl6BZGVAgAA"
+      },
+      "Metadata": {
+        "aws:cdk:path": "MultipleVpcsCdkStack/CDKMetadata/Default"
+      },
+      "Condition": "CDKMetadataAvailable"
+    }
+  },
+  "Parameters": {
+    "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+      "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+    },
+    "BootstrapVersion": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+    }
+  },
+  "Conditions": {
+    "CDKMetadataAvailable": {
+      "Fn::Or": [
+        {
+          "Fn::Or": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "af-south-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-east-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-northeast-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-northeast-2"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-south-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-southeast-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-southeast-2"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ca-central-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "cn-north-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "cn-northwest-1"
+              ]
+            }
+          ]
+        },
+        {
+          "Fn::Or": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-central-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-north-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-south-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-west-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-west-2"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-west-3"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "il-central-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "me-central-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "me-south-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "sa-east-1"
+              ]
+            }
+          ]
+        },
+        {
+          "Fn::Or": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "us-east-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "us-east-2"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "us-west-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "us-west-2"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"
+                  ],
+                  {
+                    "Ref": "BootstrapVersion"
+                  }
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+        }
+      ]
+    }
+  }
+}
