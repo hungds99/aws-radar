@@ -164,8 +164,8 @@ export class VpcCdkStack extends Stack {
       Port.tcp(22),
       'Allow SSH access from the bastion host',
     );
-
     ec2PrivateSecurityGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
     // Create a EC2 instance in the private subnet
     const workshopPrivateInstance = new Instance(this, 'workshop-test-private-ec2', {
       vpc,

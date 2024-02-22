@@ -54,19 +54,19 @@ export class MultipleVpcsCdkStack extends Stack {
     workshopPublicKeyParam.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Create a VPC and 4 subnets (2 public, 2 private)
-    const vpc = new Vpc(this, 'workshop-test-vpc', {
-      vpcName: 'workshop-test-vpc',
+    const vpc = new Vpc(this, 'workshop-test-vpc-a', {
+      vpcName: 'workshop-test-vpc-a',
       createInternetGateway: true,
       availabilityZones: ['ap-southeast-1a', 'ap-southeast-1b'],
       subnetConfiguration: [
         {
           cidrMask: 24,
-          name: 'workshop-test-public',
+          name: 'vpc-a-workshop-test-public',
           subnetType: SubnetType.PUBLIC,
         },
         {
           cidrMask: 24,
-          name: 'workshop-test-private',
+          name: 'vpc-a-workshop-test-private',
           subnetType: SubnetType.PRIVATE_WITH_EGRESS,
         },
       ],
