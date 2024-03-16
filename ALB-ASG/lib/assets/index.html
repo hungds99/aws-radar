@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Hello from $(hostname -f)</title>
+    <title></title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -13,21 +13,16 @@
         margin-top: 50px;
       }
     </style>
-    <script>
-      // Get the hostname
-      var hostname = window.location.hostname;
-
-      // Define an array of background colors
-      var colors = ['#ff0000', '#00ff00', '#0000ff'];
-
-      // Get the index of the hostname in the array
-      var index = hostname.length % colors.length;
-
-      // Set the background color based on the index
-      document.body.style.backgroundColor = colors[index];
-    </script>
   </head>
   <body>
-    <h1>Hello, World from $(hostname -f)!</h1>
+    <h1 class="host-text"></h1>
   </body>
+  <script>
+    // Get the hostname
+    const hostname = window.location.hostname;
+
+    // Set the text of the h1 element
+    document.querySelector('.host-text').textContent = 'Server Host - ' + hostname;
+    document.title = 'Hello from ' + hostname;
+  </script>
 </html>

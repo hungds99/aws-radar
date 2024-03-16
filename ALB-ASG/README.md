@@ -1,14 +1,13 @@
-# Welcome to your CDK TypeScript project
+# Elastic Load Balancer (ELB) and Auto Scaling Group (ASG)
 
-This is a blank project for CDK development with TypeScript.
+## Scalability and High Availability
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+- **Scalability**: The ability of a system to handle increased load by adding resources.
 
-## Useful commands
+  Example: An application that can handle 100 users per second and can be scaled to handle 1000 users per second.
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+  - **Vertical Scalability**: Increasing the capacity of a single machine. (ex: adding more RAM, CPU, etc.)
+  - **Horizontal Scalability**: Increasing the number of machines. (ex: adding more servers)
+
+- **High Availability**: The ability of a system to remain operational even if some of its components fail.
+  - Example: A system that can handle 100 users per second and remains operational even if one of its servers fails.

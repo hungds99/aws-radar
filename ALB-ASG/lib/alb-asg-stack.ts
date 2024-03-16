@@ -24,10 +24,11 @@ export class AlbAsgStack extends Stack {
     super(scope, id, props);
 
     // Create a S3 bucket for web content
-    const workshopWebBucket = new Bucket(this, 'workshop-test-web-bucket', {
-      bucketName: 'workshop-test-web-bucket',
-      removalPolicy: RemovalPolicy.RETAIN,
-    });
+    const workshopWebBucket = Bucket.fromBucketName(
+      this,
+      'workshop-test-web-bucket',
+      'workshop-test-web-bucket',
+    );
 
     // Create a VPC with default configurations
     const vpc = Vpc.fromLookup(this, 'vpc', { isDefault: true });
