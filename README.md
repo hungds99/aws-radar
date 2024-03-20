@@ -8,7 +8,7 @@ For my journey into AWS, I have been using the following resources:
 ### Cloud là gì ?
 
 X vừa xây dựng được một ứng dụng web, và muốn triển khai ứng dụng này lên internet.
-X có ý tưởng sử dụng máy tính cá nhân của mình để triển khai ứng dụng. X set up một máy chủ, cài đặt hệ điều hành, cài đặt các phần mềm cần thiết, cấu hình mạng, bảo mật và nhiều công việc khác nữa. Nhưng sau một thời gian, X nhận ra rằng việc này rất phức tạp và tốn kém. X quyết định tìm kiếm một giải pháp khác.
+X set up một máy chủ, cài đặt hệ điều hành, cài đặt các phần mềm cần thiết, cấu hình mạng, bảo mật và nhiều công việc khác nữa. Nhưng sau một thời gian, X nhận ra rằng việc này rất phức tạp và tốn kém. X quyết định tìm kiếm một giải pháp khác.
 
 X nghe nói về Cloud, và quyết định sử dụng dịch vụ cloud để triển khai ứng dụng của mình.
 
@@ -21,4 +21,6 @@ X nghe nói về Cloud, và quyết định sử dụng dịch vụ cloud để 
 
 Kề từ ngày đó X không cần phải lo lắng về việc cấu hình máy chủ, quản lý mạng, bảo mật, v.v. X chỉ cần tập trung vào việc phát triển ứng dụng của mình, và sử dụng các dịch vụ cloud để triển khai ứng dụng.
 
-- Các dịch vụ cloud thường được cung cấp bởi các nhà cung cấp dịch vụ cloud, như Amazon Web Services (AWS), Microsoft Azure, Google Cloud Platform.
+- Hiện nay, Các dịch vụ cloud thường được cung cấp bởi các nhà cung cấp dịch vụ cloud, như Amazon Web Services (AWS), Microsoft Azure, Google Cloud Platform...
+
+Vậy nếu bạn muốn tìm hiểu về Cloud, bạn có thể bắt đầu với AWS. Hãy tạo một tài khoản AWS và bắt đầu học đi nào !
