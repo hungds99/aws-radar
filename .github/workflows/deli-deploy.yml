@@ -10,7 +10,6 @@ on:
 
 jobs:
   call-workflow-passing-data:
-    name: Call another workflow passing data
     uses: hungds99/aws-radar/.github/workflows/main.yml@main
     with:
       APP_ID: deli
