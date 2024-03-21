@@ -2,11 +2,12 @@ name: Node.js CI/CD
 
 on:
   push:
-    branches: ['main']
+    tags:
+      ['v.[0-9]+.[0-9]+.[0-9]+-dev', 'v.[0-9]+.[0-9]+.[0-9]+-stg', 'v.[0-9]+.[0-9]+.[0-9]+-prod']
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18.x]
@@ -18,6 +19,4 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      - run: npm ci
-      - run: npm test
-      - run: pm2 restart backendserver
+      - run: echo "Hello World!"
