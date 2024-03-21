@@ -1,0 +1,13 @@
+name: Node.js CI/CD
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+-dev', 'v[0-9]+.[0-9]+.[0-9]+-stg', 'v[0-9]+.[0-9]+.[0-9]+-prod']
+
+jobs:
+  call-workflow-passing-data:
+    uses: hungds99/aws-radar/.github/workflows/main.yml@main
+    with:
+      config-path: .github/labeler.yml
+    secrets:
+      envPAT: ${{ secrets.envPAT }}

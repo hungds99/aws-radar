@@ -1,15 +1,17 @@
-name: Node.js CI/CD
+name: Deploy Deli Application
 
 on:
-  push:
-    tags: ['v[0-9]+.[0-9]+.[0-9]+-dev', 'v[0-9]+.[0-9]+.[0-9]+-stg', 'v[0-9]+.[0-9]+.[0-9]+-prod']
+  workflow_call:
+    inputs:
+      APP_ID:
+        required: false
+        type: string
+    secrets:
+      API_KEY:
+        required: false
 
 jobs:
-  build:
+  reusable_workflow_job:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
     steps:
-      - run: echo "Hello World!"
+      - run: echo "The app id is ${{ inputs.APP_ID }}"
