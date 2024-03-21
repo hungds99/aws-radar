@@ -6,12 +6,16 @@ on:
       APP_ID:
         required: false
         type: string
+      APP_ENV:
+        required: false
+        type: string
     secrets:
       API_KEY:
         required: false
 
 jobs:
   reusable_workflow_job:
+    name: Deploy ${{ inputs.APP_ID }} Application to ${{ inputs.APP_ENV }}
     runs-on: ubuntu-latest
     steps:
       - run: echo "The app id is ${{ inputs.APP_ID }}"

@@ -8,8 +8,10 @@ on:
 
 jobs:
   call-workflow-passing-data:
+    name: ⚡️ Call deployment workflow
     uses: hungds99/aws-radar/.github/workflows/main.yml@main
     with:
       APP_ID: deli
+      APP_ENV: TEST
     secrets:
-      API_KEY: ${{ secrets.API_KEY }}
+      API_KEY: 123456
