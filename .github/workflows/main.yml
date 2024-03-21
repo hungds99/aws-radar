@@ -1,5 +1,7 @@
 name: Deploy Deli Application
 
+run-name: Runner name Deploy Deli Application
+
 on:
   workflow_call:
     inputs:
@@ -15,6 +17,7 @@ on:
 
 jobs:
   reusable_workflow_job:
+    name: Reusable Workflow Job
     runs-on: ubuntu-latest
     steps:
       - run: echo "The app id is ${{ inputs.APP_ID }}"
