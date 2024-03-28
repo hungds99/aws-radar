@@ -38,7 +38,7 @@ export class AlbAsgStack extends Stack {
     userData.addCommands(
       'yum install -y httpd',
       'service httpd start',
-      `aws s3 cp s3://${workshopWebBucket.bucketName}/index.html /var/www/html/index.html`,
+      `echo "<h1>Hello World from $(hostname -f)</h1>" > /var/www/html/index.html`,
     );
 
     // Get key pair for EC2 instances
@@ -47,17 +47,6 @@ export class AlbAsgStack extends Stack {
       'workshop-test-key-pair',
       'workshop-test-key-pair',
     );
-
-    // Create a Launch Template for EC2 instances
-    const workshopLaunchTemplate = new LaunchTemplate(this, 'workshop-test-launch-template', {
-      launchTemplateName: 'workshop-test-launch-template',
-      keyPair: ec2KeyPair,
-      userData: userData,
-      machineImage: new AmazonLinuxImage({ generation: AmazonLinuxGeneration.AMAZON_LINUX_2023 }),
-      instanceType: InstanceType.of(InstanceClass.T2, InstanceSize.MICRO),
-      requireImdsv2: true,
-    });
-    workshopLaunchTemplate.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Create a Security Group for EC2 instances
     const workshopSecurityGroup = new SecurityGroup(this, 'workshop-test-security-group', {
