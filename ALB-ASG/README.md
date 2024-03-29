@@ -11,3 +11,9 @@
 
 - **High Availability**: The ability of a system to remain operational even if some of its components fail.
   - Example: A system that can handle 100 users per second and remains operational even if one of its servers fails.
+
+# Tutorial
+
+References: https://docs.aws.amazon.com/autoscaling/ec2/userguide/tutorial-ec2-auto-scaling-load-balancer.html
+
+![image](https://github.com/hungds99/aws-radar/assets/34293141/503532fd-d7c0-47e6-8159-9fba50b71040)
