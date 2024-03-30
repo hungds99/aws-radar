@@ -13,4 +13,4 @@ Các thành phần chính trong IAM:
 - IAM roles: Được xác định bởi một tên và một tập hợp các quyền truy cập. Nó không có bất kỳ thông tin xác thực nào và được sử dụng để cung cấp quyền truy cập .
 - IAM policies: là đơn vị nhỏ nhất trong IAM được định nghĩa bằng cú pháp JSON. Nó được gán cho user, group hoặc role.
 
-Khi tạo mới một tài khoản trên AWS, thì tài khoản đó được xem là tài khoản root. Nó được quyền truy cập vào tất cả dịch vụ trên AWS.
+Ví dụ: Khi tạo mới một tài khoản trên AWS, thì tài khoản đó được xem là tài khoản root. Nó được quyền truy cập vào tất cả dịch vụ trên AWS.
