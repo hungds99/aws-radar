@@ -1,26 +1,19 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
 import 'source-map-support/register';
-import { AlbAsgStack } from '../lib/alb-asg-stack';
 import { Ec2TemplateStack } from '../lib/ec2-template-stack';
+import { ElbStack } from '../lib/elb-stack';
+import { VpcStack } from '../lib/vpc-stack';
 
 const app = new cdk.App();
-new AlbAsgStack(app, 'AlbAsgStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
-
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
+new VpcStack(app, 'VpcStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
-
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
-
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
 
 new Ec2TemplateStack(app, 'Ec2TemplateStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+});
+
+new ElbStack(app, 'ElbStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 });
