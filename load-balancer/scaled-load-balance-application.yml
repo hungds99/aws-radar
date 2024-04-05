@@ -10,11 +10,11 @@ Parameters:
       - t3.medium
   KeyName:
     Description: Name of an existing EC2 key pair to allow SSH access to the instances
-    Type: 'AWS::EC2::KeyPair::KeyName'
+    Type: AWS::EC2::KeyPair::KeyName
   LatestAmiId:
     Description: The latest Amazon Linux 2 AMI from the Parameter Store
-    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
-    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
   OperatorEmail:
     Description: The email address to notify when there are any scaling activities
     Type: String
@@ -26,10 +26,10 @@ Parameters:
     Default: 0.0.0.0/0
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
   Subnets:
-    Type: 'List<AWS::EC2::Subnet::Id>'
+    Type: List<AWS::EC2::Subnet::Id>
     Description: At least two public subnets in different Availability Zones in the selected VPC
   VPC:
-    Type: 'AWS::EC2::VPC::Id'
+    Type: AWS::EC2::VPC::Id
     Description: A virtual private cloud (VPC) that enables resources in public subnets to connect to the internet
 Resources:
   ELBSecurityGroup:
@@ -51,10 +51,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          SourceSecurityGroupId:
-            Fn::GetAtt:
-              - ELBSecurityGroup
-              - GroupId
+          SourceSecurityGroupId: !GetAtt ELBSecurityGroup.GroupId
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
@@ -102,8 +99,8 @@ Resources:
         KeyName: !Ref KeyName
         SecurityGroupIds:
           - !Ref EC2SecurityGroup
-        UserData:
-          Fn::Base64: !Sub |
+        UserData: !Base64
+          Fn::Sub: |
             #!/bin/bash
             yum update -y
             yum install -y httpd
@@ -127,12 +124,10 @@ Resources:
       NotificationConfigurations:
         - TopicARN: !Ref NotificationTopic
           NotificationTypes:
-            [
-              'autoscaling:EC2_INSTANCE_LAUNCH',
-              'autoscaling:EC2_INSTANCE_LAUNCH_ERROR',
-              'autoscaling:EC2_INSTANCE_TERMINATE',
-              'autoscaling:EC2_INSTANCE_TERMINATE_ERROR',
-            ]
+            - autoscaling:EC2_INSTANCE_LAUNCH
+            - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
+            - autoscaling:EC2_INSTANCE_TERMINATE
+            - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
       TargetGroupARNs:
         - !Ref EC2TargetGroup
       VPCZoneIdentifier: !Ref Subnets

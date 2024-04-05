@@ -6,6 +6,8 @@ import {
   InstanceType,
   KeyPair,
   LaunchTemplate,
+  Peer,
+  Port,
   SecurityGroup,
   UserData,
   Vpc,
@@ -27,6 +29,12 @@ export class Ec2TemplateStack extends Stack {
       allowAllOutbound: true,
       description: 'A security group for the EC2 instances in the labs',
     });
+    const labsAlbSg = SecurityGroup.fromLookupByName(this, 'labsAlbSg', 'labs-alb-sg', labsVpc);
+    labsEc2Sg.addIngressRule(
+      Peer.securityGroupId(labsAlbSg.securityGroupId),
+      Port.tcp(80),
+      'Allow HTTP traffic',
+    );
     const labsEc2UserData = UserData.forLinux({ shebang: '#!/bin/bash' });
     labsEc2UserData.addCommands(
       'yum install -y httpd',

@@ -1,83 +1,55 @@
 {
-  "vpc-provider:account=046397301718:filter.isDefault=true:region=ap-southeast-1:returnAsymmetricSubnets=true": {
-    "vpcId": "vpc-0ad0687abc564ef8d",
-    "vpcCidrBlock": "172.31.0.0/16",
-    "ownerAccountId": "046397301718",
-    "availabilityZones": [],
-    "subnetGroups": [
-      {
-        "name": "Public",
-        "type": "Public",
-        "subnets": [
-          {
-            "subnetId": "subnet-0bd105f25777c6d20",
-            "cidr": "172.31.16.0/20",
-            "availabilityZone": "ap-southeast-1a",
-            "routeTableId": "rtb-0577ba843b2746ee0"
-          },
-          {
-            "subnetId": "subnet-0eaa35e276ca99131",
-            "cidr": "172.31.32.0/20",
-            "availabilityZone": "ap-southeast-1b",
-            "routeTableId": "rtb-0577ba843b2746ee0"
-          },
-          {
-            "subnetId": "subnet-00a02b8d711851cf5",
-            "cidr": "172.31.0.0/20",
-            "availabilityZone": "ap-southeast-1c",
-            "routeTableId": "rtb-0577ba843b2746ee0"
-          }
-        ]
-      }
-    ]
-  },
   "availability-zones:account=046397301718:region=ap-southeast-1": [
     "ap-southeast-1a",
     "ap-southeast-1b",
     "ap-southeast-1c"
   ],
   "vpc-provider:account=046397301718:filter.tag:Name=labs-vpc:region=ap-southeast-1:returnAsymmetricSubnets=true": {
-    "vpcId": "vpc-0694f956cb41840e4",
+    "vpcId": "vpc-0755318e7a68460ac",
     "vpcCidrBlock": "10.0.0.0/16",
     "ownerAccountId": "046397301718",
     "availabilityZones": [],
     "subnetGroups": [
       {
-        "name": "public",
-        "type": "Public",
-        "subnets": [
-          {
-            "subnetId": "subnet-02fe4a4a98f11339c",
-            "cidr": "10.0.0.0/24",
-            "availabilityZone": "ap-southeast-1a",
-            "routeTableId": "rtb-05e051385db7378fe"
-          },
-          {
-            "subnetId": "subnet-029a461f2f769d633",
-            "cidr": "10.0.1.0/24",
-            "availabilityZone": "ap-southeast-1b",
-            "routeTableId": "rtb-0ab8efc2a1bdc0dfb"
-          }
-        ]
-      },
-      {
         "name": "private",
         "type": "Private",
         "subnets": [
           {
-            "subnetId": "subnet-077393ddc44d04f13",
+            "subnetId": "subnet-0af3184b0ac8557ed",
             "cidr": "10.0.2.0/24",
             "availabilityZone": "ap-southeast-1a",
-            "routeTableId": "rtb-00d025e542386d69e"
+            "routeTableId": "rtb-0fd0da3644a59295a"
           },
           {
-            "subnetId": "subnet-039b5f4b6032486da",
+            "subnetId": "subnet-0f2a1e02af213c5d1",
             "cidr": "10.0.3.0/24",
             "availabilityZone": "ap-southeast-1b",
-            "routeTableId": "rtb-0c4d7c87ee5c3e321"
+            "routeTableId": "rtb-097cbc63bfcfe2426"
+          }
+        ]
+      },
+      {
+        "name": "public",
+        "type": "Public",
+        "subnets": [
+          {
+            "subnetId": "subnet-012d564787f996059",
+            "cidr": "10.0.0.0/24",
+            "availabilityZone": "ap-southeast-1a",
+            "routeTableId": "rtb-0dfc81925de440f3a"
+          },
+          {
+            "subnetId": "subnet-05c1fed36658eeead",
+            "cidr": "10.0.1.0/24",
+            "availabilityZone": "ap-southeast-1b",
+            "routeTableId": "rtb-03a7c1f16d86bd064"
           }
         ]
       }
     ]
+  },
+  "security-group:account=046397301718:region=ap-southeast-1:securityGroupName=labs-alb-sg:vpcId=vpc-0755318e7a68460ac": {
+    "securityGroupId": "sg-0a521a63a16c6aa18",
+    "allowAllOutbound": false
   }
 }

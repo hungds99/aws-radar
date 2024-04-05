@@ -1,4 +1,4 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { AutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { LaunchTemplate, Peer, Port, SecurityGroup, SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
 import {
@@ -62,13 +62,21 @@ export class ElbStack extends Stack {
     );
     const labsAlbAsg = new AutoScalingGroup(this, 'labsAlbAsg', {
       vpc: labsVpc,
+      vpcSubnets: { subnetType: SubnetType.PRIVATE_WITH_EGRESS },
       autoScalingGroupName: 'labs-alb-asg',
       minCapacity: 2,
-      desiredCapacity: 3,
+      // desiredCapacity: 3,
       maxCapacity: 5,
       launchTemplate: labsEc2LaunchTemplate,
-      vpcSubnets: { subnetType: SubnetType.PRIVATE_WITH_EGRESS },
     });
-    labsAlbAsg.attachToApplicationTargetGroup(labsAlbTg);
+    // TODO: Must do manually in the console
+    // labsAlbAsg.attachToApplicationTargetGroup(labsAlbTg);
+
+    new CfnOutput(this, 'albDnsName', {
+      key: 'AlbDnsName',
+      exportName: 'AlbDnsName',
+      value: labsAlb.loadBalancerDnsName,
+      description: 'The DNS name of the ALB',
+    });
   }
 }

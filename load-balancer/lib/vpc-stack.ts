@@ -1,4 +1,4 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 
@@ -24,6 +24,13 @@ export class VpcStack extends Stack {
           subnetType: SubnetType.PRIVATE_WITH_EGRESS,
         },
       ],
+    });
+
+    new CfnOutput(this, 'vpcId', {
+      exportName: 'VpcId',
+      key: 'VpcId',
+      value: labsVpc.vpcId,
+      description: 'The VPC ID',
     });
   }
 }
