@@ -1,4 +1,4 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import {
   AccountPrincipal,
   Effect,
@@ -19,15 +19,11 @@ export class LabsIamStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // Create service resource
+    /* -------- Create service resource -------- */
     // S3 Bucket
     const labS3Bucket = new Bucket(this, 'lab-iam-bucket', {
       bucketName: 'lab-iam-bucket',
-    });
-    labS3Bucket.applyRemovalPolicy(RemovalPolicy.DESTROY);
-    new CfnOutput(this, 'lab-iam-bucket-output', {
-      key: 'labIamBucket',
-      value: labS3Bucket.bucketName,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
     // Lambda Function
     const labLambda = new NodejsFunction(this, 'lab-iam-lambda', {
@@ -39,22 +35,22 @@ export class LabsIamStack extends Stack {
       description: 'Lab IAM Lambda',
     });
     labLambda.applyRemovalPolicy(RemovalPolicy.DESTROY);
-    new CfnOutput(this, 'lab-iam-lambda-output', {
-      key: 'labIamLambda',
-      value: labLambda.functionName,
-    });
+    /* -------------------------------------- */
 
-    // Developer Policy: Define policy allow write/read s3 bucket (lab-iam-bucket) and lambda function (lab-iam-lambda)
-    const devPolicyStatement = new PolicyStatement({
+    /* -------- Create IAM resources -------- */
+    /* Developer:
+     * - 2 developers (lab-dev-user1, lab-dev-user2) and 1 lead developer (lab-dev-lead)
+     * - Developers have permissions to read/write S3 bucket (lab-iam-bucket) and read/write lambda function (lab-iam-lambda)
+     * - A leader has the same permissions as developers and can update the configuration of the lambda function
+     */
+    const labDevPolicyStatement = new PolicyStatement({
       sid: 'AllowReadWriteToDevelopmentServices',
       effect: Effect.ALLOW,
       actions: [
         's3:PutObject',
         's3:GetObject',
         's3:ListBucket',
-        's3:ListAllMyBuckets',
         'lambda:InvokeFunction',
-        'lambda:ListFunctions',
         'lambda:GetFunction',
         'lambda:UpdateFunctionCode',
       ],
@@ -65,32 +61,46 @@ export class LabsIamStack extends Stack {
       //   },
       // },
     });
-    const devPolicy = new Policy(this, 'lab-iam-policy', {
-      policyName: 'labs-iam-policy',
-      statements: [devPolicyStatement],
+    const labDevPolicy = new Policy(this, 'lab-dev-policy', {
+      policyName: 'lab-dev-policy',
+      statements: [labDevPolicyStatement],
     });
-    // Developer User: Define user with developer policy
-    const devUser = new User(this, 'lab-dev-user', {
-      userName: 'lab-dev-user',
+    const labDevLeadPolicyStatement = new PolicyStatement({
+      sid: 'AllowUpdateLambdaConfiguration',
+      effect: Effect.ALLOW,
+      actions: ['lambda:UpdateFunctionConfiguration'],
+      resources: [labLambda.functionArn],
     });
-    devUser.attachInlinePolicy(devPolicy);
-    new CfnOutput(this, 'lab-iam-user-output', {
-      key: 'labIamDevUser',
-      value: devUser.userName,
+    const labDevLeadPolicy = new Policy(this, 'lab-dev-lead-policy', {
+      policyName: 'lab-dev-lead-policy',
+      statements: [labDevLeadPolicyStatement],
     });
-    // Developer Group: Define group with developer policy
-    const devGroup = new Group(this, 'lab-dev-group', {
+    const labDevUser1 = new User(this, 'lab-dev-user1', {
+      userName: 'lab-dev-user1',
+    });
+    const labDevUser2 = new User(this, 'lab-dev-user2', {
+      userName: 'lab-dev-user2',
+    });
+    const labDevLead = new User(this, 'lab-dev-lead', {
+      userName: 'lab-dev-lead',
+    });
+    labDevLead.attachInlinePolicy(labDevLeadPolicy);
+    const labDevGroup = new Group(this, 'lab-dev-group', {
       groupName: 'lab-dev-group',
     });
-    devGroup.attachInlinePolicy(devPolicy);
-    // Group Users: Add users to group
-    devGroup.addUser(devUser);
+    labDevGroup.attachInlinePolicy(labDevPolicy);
+    labDevGroup.addUser(labDevUser1);
+    labDevGroup.addUser(labDevUser2);
+    labDevGroup.addUser(labDevLead);
 
-    // QC Policy: Define policy allow read s3 bucket (lab-iam-bucket) and lambda function (lab-iam-lambda)
-    const qcPolicyStatement = new PolicyStatement({
+    /* Quality Control:
+     * - 1 quality control user (lab-qc-user)
+     * - QC user has permissions to read/write S3 bucket (lab-iam-bucket) and invoke lambda function (lab-iam-lambda)
+     */
+    const labQCPolicyStatement = new PolicyStatement({
       sid: 'AllowReadToQualityControlServices',
       effect: Effect.ALLOW,
-      actions: ['s3:GetObject', 's3:ListBucket', 'lambda:ListFunctions', 'lambda:GetFunction'],
+      actions: ['s3:GetObject', 's3:PutObject', 'lambda:GetFunction', 'lambda:InvokeFunction'],
       resources: [labS3Bucket.bucketArn, `${labS3Bucket.bucketArn}/*`, labLambda.functionArn],
       // conditions: {
       //   BoolIfExists: {
@@ -98,28 +108,22 @@ export class LabsIamStack extends Stack {
       //   },
       // },
     });
-    const qcPolicy = new Policy(this, 'lab-iam-qc-policy', {
-      policyName: 'labs-iam-qc-policy',
-      statements: [qcPolicyStatement],
+    const labQCPolicy = new Policy(this, 'lab-qc-policy', {
+      policyName: 'lab-qc-policy',
+      statements: [labQCPolicyStatement],
     });
-    // QC User: Define user with QC policy
-    const qcUser = new User(this, 'lab-qc-user', {
+    const labQCUser = new User(this, 'lab-qc-user', {
       userName: 'lab-qc-user',
     });
-    qcUser.attachInlinePolicy(qcPolicy);
-    new CfnOutput(this, 'lab-iam-qc-user-output', {
-      key: 'labIamQcUser',
-      value: qcUser.userName,
-    });
-    // QC Group: Define group with QC policy
-    const qcGroup = new Group(this, 'lab-qc-group', {
+    const labQCGroup = new Group(this, 'lab-qc-group', {
       groupName: 'lab-qc-group',
     });
-    qcGroup.attachInlinePolicy(qcPolicy);
-    // Group Users: Add users to group
-    qcGroup.addUser(qcUser);
+    labQCGroup.attachInlinePolicy(labQCPolicy);
+    labQCGroup.addUser(labQCUser);
 
-    // Lambda Permissions: Allow lambda to write/read s3 bucket (lab-iam-bucket)
+    /* Lambda Permissions:
+     * - Allow lambda to read/write s3 bucket (lab-iam-bucket)
+     */
     const labLambdaS3PolicyStatement = new PolicyStatement({
       sid: 'AllowReadWriteToLabIamBucket',
       effect: Effect.ALLOW,
@@ -137,12 +141,29 @@ export class LabsIamStack extends Stack {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
     });
     labLambdaS3Role.attachInlinePolicy(labLambdaS3Policy);
-
-    // Attach policy to lambda
     labLambda.role?.attachInlinePolicy(labLambdaS3Policy);
 
-    // Account outside to access the bucket
-    const iamReadOnlyAccessManagedPolicy =
+    /* Account outside:
+     * - 1 account outside (lab-outside-account)
+     * - Account outside has permissions to read S3 bucket (lab-iam-bucket), invoke lambda function (lab-iam-lambda) and read IAM role
+     */
+    const labOutsidePolicyStatement = new PolicyStatement({
+      sid: 'AllowReadToOutsideAccountServices',
+      effect: Effect.ALLOW,
+      actions: ['s3:GetObject', 'lambda:GetFunction', 'lambda:InvokeFunction'],
+      resources: [labS3Bucket.bucketArn, `${labS3Bucket.bucketArn}/*`, labLambda.functionArn],
+      // conditions: {
+      //   BoolIfExists: {
+      //     'aws:MultiFactorAuthPresent': 'true',
+      //   },
+      // },
+    });
+    const labOutsidePolicy = new Policy(this, 'lab-outside-policy', {
+      policyName: 'lab-outside-policy',
+      statements: [labOutsidePolicyStatement],
+    });
+
+    const labIamReadOnlyAccessManagedPolicy =
       ManagedPolicy.fromAwsManagedPolicyName('IAMReadOnlyAccess');
 
     const iamReadOnlyAccessRole = new Role(this, 'lab-iam-readonly-role', {
@@ -150,11 +171,7 @@ export class LabsIamStack extends Stack {
       description: 'Lab IAM Read Only Role',
       assumedBy: new AccountPrincipal('339712732434'),
     });
-    iamReadOnlyAccessRole.addManagedPolicy(iamReadOnlyAccessManagedPolicy);
-
-    new CfnOutput(this, 'lab-iam-readonly-role-output', {
-      key: 'labIamReadOnlyRole',
-      value: iamReadOnlyAccessRole.roleName,
-    });
+    iamReadOnlyAccessRole.addManagedPolicy(labIamReadOnlyAccessManagedPolicy);
+    iamReadOnlyAccessRole.attachInlinePolicy(labOutsidePolicy);
   }
 }
