@@ -1,26 +1,25 @@
-## AWS
+## 🏗️ AWS
 
-For my journey into AWS, I have been using the following resources:
+🚀 Throughout my exploration of AWS, I've leveraged the following resources::
 
 - [AWS Certified Solutions Architect - Associate 2024](https://www.udemy.com/course/aws-certified-solutions-architect-associate-saa-c03)
 - [AWS Certified Developer - Associate 2024](https://www.udemy.com/course/aws-certified-developer-associate-dva-c01)
 
-### Cloud là gì ?
+### What is Cloud ?
 
-X vừa xây dựng được một ứng dụng web, và muốn triển khai ứng dụng này lên internet.
-X set up một máy chủ, cài đặt hệ điều hành, cài đặt các phần mềm cần thiết, cấu hình mạng, bảo mật và nhiều công việc khác nữa. Nhưng sau một thời gian, X nhận ra rằng việc này rất phức tạp và tốn kém. X quyết định tìm kiếm một giải pháp khác.
+X has just built a web application and wants to deploy this application on the internet. X sets up a server, installs the operating system, installs the necessary software, configures the network, secures it, and many other tasks. But after a while, X realizes that this is very complicated and expensive. X decides to look for another solution.
 
-X nghe nói về Cloud, và quyết định sử dụng dịch vụ cloud để triển khai ứng dụng của mình.
+X heard about Cloud, and decided to use cloud services to deploy his application.
 
-- Cloud là một hình thức cung cấp dịch vụ thông qua mạng internet. Các dịch vụ này có thể bao gồm máy chủ, lưu trữ, cơ sở dữ liệu, mạng, phần mềm ...
+Cloud is a form of service delivery over the internet. These services can include servers, storage, databases, networks, software...
 
-- Ưu điểm:
-  - Linh hoạt và dễ dàng mở rộng
-  - Tiết kiệm chi phí
-  - Cung sẵn các API để tương tác với các dịch vụ cloud
+Advantages:
 
-Kề từ ngày đó X không cần phải lo lắng về việc cấu hình máy chủ, quản lý mạng, bảo mật, v.v. X chỉ cần tập trung vào việc phát triển ứng dụng của mình, và sử dụng các dịch vụ cloud để triển khai ứng dụng.
+- Flexible and easy to scale
+- Cost savings
+- Provides APIs to interact with cloud services
+- From that day on, X doesn't have to worry about configuring servers, managing networks, security, etc. X just needs to focus on - developing his application, and use cloud services to deploy the application.
 
-- Hiện nay, Các dịch vụ cloud thường được cung cấp bởi các nhà cung cấp dịch vụ cloud, như Amazon Web Services (AWS), Microsoft Azure, Google Cloud Platform...
+Currently, cloud services are often provided by cloud service providers, such as Amazon Web Services (AWS), Microsoft Azure, Google Cloud Platform...
 
-Vậy nếu bạn muốn tìm hiểu về Cloud, bạn có thể bắt đầu với AWS. Hãy tạo một tài khoản AWS và bắt đầu học đi nào !
+So if you want to learn about Cloud, you can start with AWS. Create an AWS account and start learning!
