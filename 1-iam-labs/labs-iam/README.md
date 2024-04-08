@@ -7,8 +7,8 @@ This is a hands-on lab that will guide you through the process of creating an IA
 - AWS account
 - Three services are required to complete this lab:
   - IAM
-  - S3
-  - Lambda
+  - S3 (`lab-iam-bucket`)
+  - Lambda (`lab-iam-lambda`)
 
 ## Requirements
 
@@ -25,10 +25,10 @@ Our company is developing a serverless application with an S3 bucket and a Lambd
 
 **Permissions**:
 
-- Developers: Read/Write access to S3 bucket (lab-iam-bucket) and Lambda function (lab-iam-lambda). Lead developer can also update Lambda function configuration.
-- QC User: Read/Write access to S3 bucket (lab-iam-bucket) and Invoke Lambda function (lab-iam-lambda).
-- External Account: Read-only access to S3 bucket (lab-iam-bucket), Invoke Lambda function (lab-iam-lambda), and View IAM roles (limited information).
+- Developers: Read/Write access to S3 bucket (`lab-iam-bucket`) and Lambda function (`lab-iam-lambda`). Lead developer can also update Lambda function configuration.
+- QC User: Read/Write access to S3 bucket (`lab-iam-bucket`) and Invoke Lambda function (lab-iam-lambda).
+- External Account: Read-only access to S3 bucket (`lab-iam-bucket`), Invoke Lambda function (`lab-iam-lambda`), and View IAM roles (limited information).
 
 **Lambda Role Permissions**:
 
-- Allow Lambda function to read/write S3 bucket (lab-iam-bucket).
+- Allow Lambda function to read/write S3 bucket (`lab-iam-bucket`).
