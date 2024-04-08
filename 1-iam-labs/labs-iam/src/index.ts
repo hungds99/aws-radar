@@ -7,8 +7,9 @@ export const handler = async (event: any) => {
   console.log('Received event:', JSON.stringify(event, null, 2));
 
   // Get the object from the event and show its content type
-  const bucket = event.Records[0].s3.bucket.name;
-  const key = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
+  const bucket = event.bucket_name;
+  const key = event.key;
+
   const params = {
     Bucket: bucket,
     Key: key,

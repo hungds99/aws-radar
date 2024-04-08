@@ -12,18 +12,23 @@ This is a hands-on lab that will guide you through the process of creating an IA
 
 ## Requirements
 
-We have root account. But I want to create a new user and group with the following permissions:
+Our company is developing a serverless application with an S3 bucket and a Lambda function. We need to define different access levels for various user groups:
 
-- Developer team: 3 members with 1 leader
+**Users**:
 
-  - All team should have read-write access to the S3 bucket and Lambda function.
-  - The leader should have full access to the S3 bucket and Lambda function.
+- Developers:
+  - Two developers (`lab-dev-user1` and `lab-dev-user2`) and one lead developer (`lab-dev-lead`).
+- Quality Control (QC):
+  - One quality control user (`lab-qc-user`).
+- External Account:
+  - One external account (`lab-outside-account`).
 
-- QC team: 2 members with 1 leader
+**Permissions**:
 
-  - All team should have read-only access to the S3 bucket and Lambda function.
-  - The leader should have full access to the S3 bucket.
+- Developers: Read/Write access to S3 bucket (lab-iam-bucket) and Lambda function (lab-iam-lambda). Lead developer can also update Lambda function configuration.
+- QC User: Read/Write access to S3 bucket (lab-iam-bucket) and Invoke Lambda function (lab-iam-lambda).
+- External Account: Read-only access to S3 bucket (lab-iam-bucket), Invoke Lambda function (lab-iam-lambda), and View IAM roles (limited information).
 
-- Lambda function should have access to read objects to the S3 bucket.
+**Lambda Role Permissions**:
 
-- Allow account outside can read-only in IAM. (ID: 123456789012)
+- Allow Lambda function to read/write S3 bucket (lab-iam-bucket).
