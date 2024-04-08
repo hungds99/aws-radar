@@ -1,6 +1,7 @@
 import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import {
-  AccountPrincipal,
+  ArnPrincipal,
+  CompositePrincipal,
   Effect,
   Group,
   ManagedPolicy,
@@ -147,6 +148,10 @@ export class LabsIamStack extends Stack {
      * - 1 account outside (lab-outside-account)
      * - Account outside has permissions to read S3 bucket (lab-iam-bucket), invoke lambda function (lab-iam-lambda) and read IAM role
      */
+    const labOutsideUser = new User(this, 'lab-outside-user', {
+      userName: 'lab-outside-user',
+    });
+
     const labOutsidePolicyStatement = new PolicyStatement({
       sid: 'AllowReadToOutsideAccountServices',
       effect: Effect.ALLOW,
@@ -169,7 +174,7 @@ export class LabsIamStack extends Stack {
     const iamReadOnlyAccessRole = new Role(this, 'lab-iam-readonly-role', {
       roleName: 'lab-iam-readonly-role',
       description: 'Lab IAM Read Only Role',
-      assumedBy: new AccountPrincipal('339712732434'),
+      assumedBy: new CompositePrincipal(new ArnPrincipal(labOutsideUser.userArn)),
     });
     iamReadOnlyAccessRole.addManagedPolicy(labIamReadOnlyAccessManagedPolicy);
     iamReadOnlyAccessRole.attachInlinePolicy(labOutsidePolicy);
