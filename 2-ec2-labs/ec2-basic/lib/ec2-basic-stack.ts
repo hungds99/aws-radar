@@ -1,7 +1,9 @@
-import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import {
   AmazonLinuxGeneration,
   AmazonLinuxImage,
+  CfnInstance,
+  EbsDeviceVolumeType,
   Instance,
   InstanceClass,
   InstanceSize,
@@ -28,7 +30,7 @@ export class Ec2BasicStack extends Stack {
     ec2BasicUserData.addCommands(
       'yum install -y httpd',
       'service httpd start',
-      'echo "<h1>Hello, World from $(hostname -f)!</h1>" > /var/www/html/index.html',
+      'echo "<h1>Your server hosted in $(hostname -f)!</h1>" > /var/www/html/index.html',
     );
 
     // Get key pair for EC2 instances
@@ -58,13 +60,74 @@ export class Ec2BasicStack extends Stack {
       instanceType: InstanceType.of(InstanceClass.T2, InstanceSize.MICRO),
       machineImage: new AmazonLinuxImage({ generation: AmazonLinuxGeneration.AMAZON_LINUX_2023 }),
       vpcSubnets: { subnetType: SubnetType.PUBLIC },
-      requireImdsv2: true,
+      requireImdsv2: false,
       userData: ec2BasicUserData,
       keyPair: ec2BasicKeyPair,
       associatePublicIpAddress: true,
       securityGroup: ec2BasicSecurityGroup,
+      blockDevices: [
+        {
+          deviceName: '/dev/xvda',
+          volume: {
+            virtualName: 'ephemeral0',
+            ebsDevice: {
+              volumeSize: 8,
+              volumeType: EbsDeviceVolumeType.GP2,
+              deleteOnTermination: true,
+              encrypted: true,
+            },
+          },
+        },
+        {
+          deviceName: '/dev/xvdb',
+          volume: {
+            virtualName: 'ephemeral1',
+            ebsDevice: {
+              volumeSize: 8,
+              volumeType: EbsDeviceVolumeType.GP3,
+              deleteOnTermination: true,
+              encrypted: true,
+            },
+          },
+        },
+        {
+          deviceName: '/dev/xvdc',
+          volume: {
+            virtualName: 'ephemeral2',
+            ebsDevice: {
+              volumeSize: 8,
+              volumeType: EbsDeviceVolumeType.GP3,
+              deleteOnTermination: true,
+              encrypted: true,
+            },
+          },
+        },
+        {
+          deviceName: '/dev/xvdd',
+          volume: {
+            virtualName: 'ephemeral3',
+            ebsDevice: {
+              volumeSize: 8,
+              volumeType: EbsDeviceVolumeType.GP2,
+              deleteOnTermination: true,
+              encrypted: true,
+            },
+          },
+        },
+      ],
     });
+
+    // Enable termination protection
+    const cfnInstance = ec2BasicPublicServer.node.defaultChild as CfnInstance;
+    cfnInstance.disableApiTermination = true;
+
     ec2BasicPublicServer.applyRemovalPolicy(RemovalPolicy.DESTROY);
     ec2BasicSecurityGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
+    // Output
+    new CfnOutput(this, 'ec2-basic-public-server-public-ip', {
+      value: ec2BasicPublicServer.instancePublicIp,
+      description: 'Public IP address of the EC2 instance',
+    });
   }
 }
