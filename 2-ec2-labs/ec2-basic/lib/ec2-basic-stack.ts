@@ -67,7 +67,20 @@ export class Ec2BasicStack extends Stack {
       keyPair: ec2BasicKeyPair,
       associatePublicIpAddress: true,
       securityGroup: ec2BasicSecurityGroup,
-      blockDevices: [],
+      blockDevices: [
+        {
+          deviceName: '/dev/xvda',
+          volume: {
+            virtualName: 'ephemeral0',
+            ebsDevice: {
+              volumeSize: 8,
+              volumeType: EbsDeviceVolumeType.GENERAL_PURPOSE_SSD,
+              deleteOnTermination: true,
+              encrypted: true,
+            },
+          },
+        },
+      ],
     });
 
     // Enable termination protection
