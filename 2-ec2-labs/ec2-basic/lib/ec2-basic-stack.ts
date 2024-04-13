@@ -1,4 +1,4 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, RemovalPolicy, Size, Stack, StackProps } from 'aws-cdk-lib';
 import {
   AmazonLinuxGeneration,
   AmazonLinuxImage,
@@ -14,8 +14,10 @@ import {
   SecurityGroup,
   SubnetType,
   UserData,
+  Volume,
   Vpc,
 } from 'aws-cdk-lib/aws-ec2';
+import { Policy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 export class Ec2BasicStack extends Stack {
@@ -65,56 +67,7 @@ export class Ec2BasicStack extends Stack {
       keyPair: ec2BasicKeyPair,
       associatePublicIpAddress: true,
       securityGroup: ec2BasicSecurityGroup,
-      blockDevices: [
-        {
-          deviceName: '/dev/xvda',
-          volume: {
-            virtualName: 'ephemeral0',
-            ebsDevice: {
-              volumeSize: 8,
-              volumeType: EbsDeviceVolumeType.GP2,
-              deleteOnTermination: true,
-              encrypted: true,
-            },
-          },
-        },
-        {
-          deviceName: '/dev/xvdb',
-          volume: {
-            virtualName: 'ephemeral1',
-            ebsDevice: {
-              volumeSize: 8,
-              volumeType: EbsDeviceVolumeType.GP3,
-              deleteOnTermination: true,
-              encrypted: true,
-            },
-          },
-        },
-        {
-          deviceName: '/dev/xvdc',
-          volume: {
-            virtualName: 'ephemeral2',
-            ebsDevice: {
-              volumeSize: 8,
-              volumeType: EbsDeviceVolumeType.GP3,
-              deleteOnTermination: true,
-              encrypted: true,
-            },
-          },
-        },
-        {
-          deviceName: '/dev/xvdd',
-          volume: {
-            virtualName: 'ephemeral3',
-            ebsDevice: {
-              volumeSize: 8,
-              volumeType: EbsDeviceVolumeType.GP2,
-              deleteOnTermination: true,
-              encrypted: true,
-            },
-          },
-        },
-      ],
+      blockDevices: [],
     });
 
     // Enable termination protection
