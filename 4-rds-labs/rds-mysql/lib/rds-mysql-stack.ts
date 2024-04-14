@@ -1,6 +1,11 @@
 import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { InstanceClass, InstanceSize, InstanceType, SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
-import { DatabaseInstance, DatabaseInstanceEngine, MysqlEngineVersion } from 'aws-cdk-lib/aws-rds';
+import {
+  Credentials,
+  DatabaseInstance,
+  DatabaseInstanceEngine,
+  MysqlEngineVersion,
+} from 'aws-cdk-lib/aws-rds';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
@@ -14,11 +19,13 @@ export class RdsMysqlStack extends Stack {
     const labMysqlDB = new DatabaseInstance(this, 'LabMysqlDB', {
       vpc: defaultVpc,
       databaseName: 'labMysqlDB',
-      engine: DatabaseInstanceEngine.MYSQL,
-      vpcSubnets: {
-        subnetType: SubnetType.PUBLIC,
-      },
+      engine: DatabaseInstanceEngine.mysql({
+        version: MysqlEngineVersion.VER_8_0_36,
+      }),
+      instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO),
+      vpcSubnets: { subnetType: SubnetType.PUBLIC },
       publiclyAccessible: true,
+      deleteAutomatedBackups: true,
     });
     labMysqlDB.applyRemovalPolicy(RemovalPolicy.DESTROY);
   }
