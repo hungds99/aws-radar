@@ -8,6 +8,7 @@ import {
   InstanceType,
   KeyPair,
   LaunchTemplate,
+  UserData,
 } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 
@@ -19,6 +20,17 @@ export class Ec2LaunchTemplateStack extends Stack {
       this,
       'lab-webserver-keypair',
       'lab-webserver-keypair',
+    );
+
+    const labWebServerUserData = UserData.forLinux({
+      shebang: '#!/bin/bash',
+    });
+    labWebServerUserData.addCommands(
+      'yum update -y',
+      'yum install -y nodejs git nginx',
+      'npm install -g pm2',
+      'systemctl start nginx',
+      'systemctl enable nginx',
     );
 
     const labWebServerLaunchTemplate = new LaunchTemplate(this, 'lab-webserver-launch-template', {
