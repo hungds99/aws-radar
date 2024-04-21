@@ -25,7 +25,7 @@ export class Ec2LaunchTemplateStack extends Stack {
       launchTemplateName: 'lab-webserver-launch-template',
       keyPair: labWebServerKeyPair,
       instanceType: InstanceType.of(InstanceClass.T2, InstanceSize.MICRO),
-      machineImage: new AmazonLinuxImage({ generation: AmazonLinuxGeneration.AMAZON_LINUX_2 }),
+      machineImage: new AmazonLinuxImage({ generation: AmazonLinuxGeneration.AMAZON_LINUX_2023 }),
       blockDevices: [
         {
           deviceName: '/dev/xvda',
@@ -38,11 +38,17 @@ export class Ec2LaunchTemplateStack extends Stack {
           },
         },
       ],
+      requireImdsv2: true,
     });
 
     new CfnOutput(this, 'labWebServerLaunchTemplateId', {
       key: 'labWebServerLaunchTemplateID',
       value: labWebServerLaunchTemplate.launchTemplateId || '',
+    });
+
+    new CfnOutput(this, 'labWebServerLaunchTemplateVersion', {
+      key: 'labWebServerLaunchTemplateVersion',
+      value: labWebServerLaunchTemplate.latestVersionNumber || '',
     });
   }
 }
