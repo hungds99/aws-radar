@@ -52,6 +52,7 @@ export class Ec2LaunchTemplateStack extends Stack {
       ],
       requireImdsv2: true,
       associatePublicIpAddress: false,
+      userData: labWebServerUserData,
     });
 
     new CfnOutput(this, 'labWebServerLaunchTemplateId', {
