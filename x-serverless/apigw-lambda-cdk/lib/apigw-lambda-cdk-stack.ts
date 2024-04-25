@@ -1,5 +1,13 @@
-import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
-import { IResource, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import {
+  Deployment,
+  IResource,
+  LambdaIntegration,
+  LogGroupLogDestination,
+  MethodLoggingLevel,
+  RestApi,
+  Stage,
+} from 'aws-cdk-lib/aws-apigateway';
 import { Architecture } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
@@ -15,8 +23,36 @@ export class ApigwLambdaCdkStack extends Stack {
       description: 'This is a lab API for todos management',
       deploy: true,
       deployOptions: {
-        stageName: 'dev',
+        stageName: 'prod',
+        description: 'Deployment for prod stage',
+        accessLogDestination: new LogGroupLogDestination(
+          new LogGroup(this, 'lab-api-prod-access-log', {
+            retention: 7,
+            removalPolicy: RemovalPolicy.DESTROY,
+          }),
+        ),
+        loggingLevel: MethodLoggingLevel.INFO
       },
+    });
+
+    // Create dev stage
+    const labTodosManagementAPIDevDeployment = new Deployment(
+      this,
+      'lab-todos-management-api-dev-deployment',
+      {
+        api: labTodosManagementAPI,
+        description: 'Deployment for dev stage',
+      },
+    );
+    const labTodosManagementAPIDevStage = new Stage(this, 'lab-todos-management-api-dev-stage', {
+      deployment: labTodosManagementAPIDevDeployment,
+      stageName: 'dev',
+      accessLogDestination: new LogGroupLogDestination(
+        new LogGroup(this, 'lab-api-dev-access-log', {
+          retention: 7,
+          removalPolicy: RemovalPolicy.DESTROY,
+        }),
+      ),
     });
 
     // Function to create lambda and its integration
@@ -30,6 +66,7 @@ export class ApigwLambdaCdkStack extends Stack {
         architecture: Architecture.ARM_64,
         logGroup: new LogGroup(this, `lab-${id}-lambda-log-group`, {
           retention: 7,
+          removalPolicy: RemovalPolicy.DESTROY,
         }),
       });
       return new LambdaIntegration(lambda, {});
@@ -77,10 +114,25 @@ export class ApigwLambdaCdkStack extends Stack {
     });
 
     // Output the API Gateway URL
-    new CfnOutput(this, 'lab-api-gateway-url', {
-      key: 'apigwUrl',
+    new CfnOutput(this, 'lab-api-gateway-prod-url', {
+      key: 'apigwUrlProd',
       value: labTodosManagementAPI.urlForPath(),
-      description: 'API Gateway URL',
+      description: 'API Gateway Production URL',
+    });
+    new CfnOutput(this, 'lab-api-gateway-dev-url', {
+      key: 'apigwUrlDev',
+      value: labTodosManagementAPIDevStage.urlForPath(),
+      description: 'API Gateway Development URL',
+    });
+    new CfnOutput(this, 'lab-api-gateway-latest-deployment-id', {
+      key: 'apigwLatestDeploymentId',
+      value: labTodosManagementAPI.latestDeployment?.deploymentId || '',
+      description: 'API Gateway Latest Deployment ID',
+    });
+    new CfnOutput(this, 'lab-api-gateway-dev-deployment-id', {
+      key: 'apigwDevDeploymentId',
+      value: labTodosManagementAPIDevDeployment.deploymentId,
+      description: 'API Gateway Development Deployment ID',
     });
   }
 }
