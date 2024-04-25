@@ -1,4 +1,4 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import {
   Deployment,
   GatewayResponse,
@@ -62,31 +62,20 @@ export class ApigwLambdaCdkStack extends Stack {
     new GatewayResponse(this, 'lab-todos-management-api-gateway-403-response', {
       restApi: labTodosManagementAPI,
       type: ResponseType.DEFAULT_4XX,
+      statusCode: '403',
       templates: {
         'application/json': `{
           "message": "$context.authorizer.errorMessage"
         }`,
       },
     });
-    // new GatewayResponse(this, 'lab-todos-management-api-gateway-401-response', {
-    //   restApi: labTodosManagementAPI,
-    //   type: ResponseType.UNAUTHORIZED,
-    //   statusCode: '401',
-    //   templates: {
-    //     'application/json': `{
-    //       "message": "$context.authorizer.errorMessage"
-    //     }`,
-    //   },
-    // });
 
     // Function to create lambda and its integration
     const createLambdaAndIntegration = (id: string, handler: string) => {
       const lambda = new NodejsFunction(this, `lab-${id}-lambda`, {
         entry: 'src/index.ts',
         handler: handler,
-        bundling: {
-          minify: false,
-        },
+        bundling: { minify: false },
         architecture: Architecture.ARM_64,
         logGroup: new LogGroup(this, `lab-${id}-lambda-log-group`, {
           retention: 7,
@@ -100,9 +89,7 @@ export class ApigwLambdaCdkStack extends Stack {
       const lambda = new NodejsFunction(this, `lab-${id}-lambda`, {
         entry: 'src/auth/index.ts',
         handler: handler,
-        bundling: {
-          minify: false,
-        },
+        bundling: { minify: false },
         architecture: Architecture.ARM_64,
         logGroup: new LogGroup(this, `lab-${id}-lambda-log-group`, {
           retention: 7,
@@ -112,6 +99,7 @@ export class ApigwLambdaCdkStack extends Stack {
       return new TokenAuthorizer(this, `lab-${id}-authorizer`, {
         handler: lambda,
         authorizerName: 'lab-jwt-token-authorizer',
+        resultsCacheTtl: Duration.seconds(0),
       });
     };
     const jwtTokenAuthorizer = createTokenAuthorizerLambda('jwt-token-authorizer', 'handler');

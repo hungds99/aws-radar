@@ -1,4 +1,4 @@
-export const handler = async (event: any, context: any, callback: any) => {
+export const handler = async (event: any, context: any) => {
   console.log('AUTH_EVENT: ', event);
   console.log('AUTH_CONTEXT: ', context);
 
@@ -9,16 +9,11 @@ export const handler = async (event: any, context: any, callback: any) => {
       return generatePolicy('user', 'Allow', event.methodArn);
     case 'deny':
       return generatePolicy('user', 'Deny', event.methodArn);
-    case 'unauthorized':
-      callback('Unauthorized'); // Return a 401 Unauthorized response
-      break;
-    default:
-      callback('Error: Invalid token'); // Return a 500 Invalid token response
   }
 };
 
 // Help function to generate an IAM policy
-var generatePolicy = function (principalId: any, effect: any, resource: any) {
+const generatePolicy = function (principalId: any, effect: any, resource: any) {
   const authResponse: any = {};
 
   authResponse.principalId = principalId;
@@ -36,10 +31,7 @@ var generatePolicy = function (principalId: any, effect: any, resource: any) {
 
   // Optional output with custom properties of the String, Number or Boolean type.
   authResponse.context = {
-    errorMessage: 'Unauthorized',
-    stringKey: 'stringval',
-    numberKey: 123,
-    booleanKey: true,
+    errorMessage: 'You are not authorized to access this resource.',
   };
   return authResponse;
 };
