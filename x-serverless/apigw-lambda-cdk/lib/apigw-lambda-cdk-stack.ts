@@ -1,10 +1,12 @@
 import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import {
+  ApiKey,
   Deployment,
   GatewayResponse,
   IResource,
   LambdaIntegration,
   LogGroupLogDestination,
+  Period,
   ResponseType,
   RestApi,
   Stage,
@@ -70,6 +72,36 @@ export class ApigwLambdaCdkStack extends Stack {
       },
     });
 
+    // Create an API usage plan
+    const labTodosManagementAPIUsagePlan = labTodosManagementAPI.addUsagePlan(
+      'lab-todos-management-api-usage-plan',
+      {
+        name: 'lab-todos-management-api-usage-plan',
+        description: 'Usage plan for lab todos management API',
+        apiStages: [
+          { api: labTodosManagementAPI, stage: labTodosManagementAPIDevStage },
+          {
+            api: labTodosManagementAPI,
+            stage: labTodosManagementAPI.deploymentStage!,
+          },
+        ],
+        throttle: {
+          rateLimit: 100,
+          burstLimit: 50,
+        },
+        quota: {
+          limit: 1000,
+          period: Period.DAY,
+        },
+      },
+    );
+    const labTodosManagementAPIUsagePlanKey = ApiKey.fromApiKeyId(
+      this,
+      'lab-todos-management-api-usage-plan-key',
+      '4jixw76035',
+    );
+    labTodosManagementAPIUsagePlan.addApiKey(labTodosManagementAPIUsagePlanKey);
+
     // Function to create lambda and its integration
     const createLambdaAndIntegration = (id: string, handler: string) => {
       const lambda = new NodejsFunction(this, `lab-${id}-lambda`, {
@@ -131,7 +163,7 @@ export class ApigwLambdaCdkStack extends Stack {
           {
             method: 'POST',
             lambda: lambdas.createTodo,
-            options: { authorizer: jwtTokenAuthorizer },
+            options: { authorizer: jwtTokenAuthorizer, apiKeyRequired: true },
           },
         ],
       },
@@ -142,12 +174,12 @@ export class ApigwLambdaCdkStack extends Stack {
           {
             method: 'PUT',
             lambda: lambdas.updateTodo,
-            options: { authorizer: jwtTokenAuthorizer },
+            options: { authorizer: jwtTokenAuthorizer, apiKeyRequired: true },
           },
           {
             method: 'DELETE',
             lambda: lambdas.deleteTodo,
-            options: { authorizer: jwtTokenAuthorizer },
+            options: { authorizer: jwtTokenAuthorizer, apiKeyRequired: true },
           },
         ],
       },
@@ -159,6 +191,7 @@ export class ApigwLambdaCdkStack extends Stack {
       integrations.forEach(({ method, lambda, options }: any) => {
         integrationResource.addMethod(method, lambda, {
           authorizer: options?.authorizer,
+          apiKeyRequired: options?.apiKeyRequired,
         });
       });
     });

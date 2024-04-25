@@ -4,12 +4,20 @@ export const handler = async (event: any, context: any) => {
 
   const token = event?.authorizationToken?.split(' ')[1];
 
+  let authResponse = null;
+
   switch (token) {
     case 'allow':
-      return generatePolicy('user', 'Allow', event.methodArn);
+      authResponse = generatePolicy('user', 'Allow', event.methodArn);
+      break;
     case 'deny':
-      return generatePolicy('user', 'Deny', event.methodArn);
+      authResponse = generatePolicy('user', 'Deny', event.methodArn);
+      break;
   }
+
+  console.log('AUTH_RESPONSE: ', authResponse);
+
+  return authResponse;
 };
 
 // Help function to generate an IAM policy
@@ -31,7 +39,7 @@ const generatePolicy = function (principalId: any, effect: any, resource: any) {
 
   // Optional output with custom properties of the String, Number or Boolean type.
   authResponse.context = {
-    errorMessage: 'You are not authorized to access this resource.',
+    errorMessage: 'You are not authorized to access this resource',
   };
   return authResponse;
 };
