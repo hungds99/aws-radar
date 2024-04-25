@@ -36,6 +36,9 @@ export class ApigwLambdaCdkStack extends Stack {
             removalPolicy: RemovalPolicy.DESTROY,
           }),
         ),
+        cachingEnabled: true,
+        cacheDataEncrypted: true,
+        cacheTtl: Duration.seconds(60),
       },
     });
 
@@ -58,6 +61,9 @@ export class ApigwLambdaCdkStack extends Stack {
           removalPolicy: RemovalPolicy.DESTROY,
         }),
       ),
+      cachingEnabled: true,
+      cacheDataEncrypted: true,
+      cacheTtl: Duration.seconds(60),
     });
 
     // Custom gateway response
