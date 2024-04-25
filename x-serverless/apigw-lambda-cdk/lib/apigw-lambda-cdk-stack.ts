@@ -31,7 +31,7 @@ export class ApigwLambdaCdkStack extends Stack {
             removalPolicy: RemovalPolicy.DESTROY,
           }),
         ),
-        loggingLevel: MethodLoggingLevel.INFO
+        loggingLevel: MethodLoggingLevel.INFO,
       },
     });
 
@@ -53,6 +53,7 @@ export class ApigwLambdaCdkStack extends Stack {
           removalPolicy: RemovalPolicy.DESTROY,
         }),
       ),
+      loggingLevel: MethodLoggingLevel.INFO,
     });
 
     // Function to create lambda and its integration
