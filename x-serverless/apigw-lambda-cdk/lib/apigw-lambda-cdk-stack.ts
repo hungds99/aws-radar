@@ -1,12 +1,14 @@
 import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import {
   Deployment,
+  GatewayResponse,
   IResource,
   LambdaIntegration,
   LogGroupLogDestination,
-  MethodLoggingLevel,
+  ResponseType,
   RestApi,
   Stage,
+  TokenAuthorizer,
 } from 'aws-cdk-lib/aws-apigateway';
 import { Architecture } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -22,6 +24,7 @@ export class ApigwLambdaCdkStack extends Stack {
       restApiName: 'lab-todos-management-api',
       description: 'This is a lab API for todos management',
       deploy: true,
+      retainDeployments: true,
       deployOptions: {
         stageName: 'prod',
         description: 'Deployment for prod stage',
@@ -31,7 +34,6 @@ export class ApigwLambdaCdkStack extends Stack {
             removalPolicy: RemovalPolicy.DESTROY,
           }),
         ),
-        loggingLevel: MethodLoggingLevel.INFO,
       },
     });
 
@@ -42,6 +44,7 @@ export class ApigwLambdaCdkStack extends Stack {
       {
         api: labTodosManagementAPI,
         description: 'Deployment for dev stage',
+        retainDeployments: true,
       },
     );
     const labTodosManagementAPIDevStage = new Stage(this, 'lab-todos-management-api-dev-stage', {
@@ -53,8 +56,28 @@ export class ApigwLambdaCdkStack extends Stack {
           removalPolicy: RemovalPolicy.DESTROY,
         }),
       ),
-      loggingLevel: MethodLoggingLevel.INFO,
     });
+
+    // Custom gateway response
+    new GatewayResponse(this, 'lab-todos-management-api-gateway-403-response', {
+      restApi: labTodosManagementAPI,
+      type: ResponseType.DEFAULT_4XX,
+      templates: {
+        'application/json': `{
+          "message": "$context.authorizer.errorMessage"
+        }`,
+      },
+    });
+    // new GatewayResponse(this, 'lab-todos-management-api-gateway-401-response', {
+    //   restApi: labTodosManagementAPI,
+    //   type: ResponseType.UNAUTHORIZED,
+    //   statusCode: '401',
+    //   templates: {
+    //     'application/json': `{
+    //       "message": "$context.authorizer.errorMessage"
+    //     }`,
+    //   },
+    // });
 
     // Function to create lambda and its integration
     const createLambdaAndIntegration = (id: string, handler: string) => {
@@ -62,7 +85,7 @@ export class ApigwLambdaCdkStack extends Stack {
         entry: 'src/index.ts',
         handler: handler,
         bundling: {
-          minify: true,
+          minify: false,
         },
         architecture: Architecture.ARM_64,
         logGroup: new LogGroup(this, `lab-${id}-lambda-log-group`, {
@@ -72,6 +95,26 @@ export class ApigwLambdaCdkStack extends Stack {
       });
       return new LambdaIntegration(lambda, {});
     };
+
+    const createTokenAuthorizerLambda = (id: string, handler: string) => {
+      const lambda = new NodejsFunction(this, `lab-${id}-lambda`, {
+        entry: 'src/auth/index.ts',
+        handler: handler,
+        bundling: {
+          minify: false,
+        },
+        architecture: Architecture.ARM_64,
+        logGroup: new LogGroup(this, `lab-${id}-lambda-log-group`, {
+          retention: 7,
+          removalPolicy: RemovalPolicy.DESTROY,
+        }),
+      });
+      return new TokenAuthorizer(this, `lab-${id}-authorizer`, {
+        handler: lambda,
+        authorizerName: 'lab-jwt-token-authorizer',
+      });
+    };
+    const jwtTokenAuthorizer = createTokenAuthorizerLambda('jwt-token-authorizer', 'handler');
 
     // Define all your lambdas and their integrations
     const lambdas = {
@@ -92,16 +135,32 @@ export class ApigwLambdaCdkStack extends Stack {
       {
         path: '/todos',
         integrations: [
-          { method: 'GET', lambda: lambdas.todos },
-          { method: 'POST', lambda: lambdas.createTodo },
+          {
+            method: 'GET',
+            lambda: lambdas.todos,
+            options: { authorizer: jwtTokenAuthorizer },
+          },
+          {
+            method: 'POST',
+            lambda: lambdas.createTodo,
+            options: { authorizer: jwtTokenAuthorizer },
+          },
         ],
       },
       {
         path: '/todos/{id}',
         integrations: [
-          { method: 'GET', lambda: lambdas.todoById },
-          { method: 'PUT', lambda: lambdas.updateTodo },
-          { method: 'DELETE', lambda: lambdas.deleteTodo },
+          { method: 'GET', lambda: lambdas.todoById, options: { authorizer: jwtTokenAuthorizer } },
+          {
+            method: 'PUT',
+            lambda: lambdas.updateTodo,
+            options: { authorizer: jwtTokenAuthorizer },
+          },
+          {
+            method: 'DELETE',
+            lambda: lambdas.deleteTodo,
+            options: { authorizer: jwtTokenAuthorizer },
+          },
         ],
       },
     ];
@@ -109,8 +168,10 @@ export class ApigwLambdaCdkStack extends Stack {
     // Add methods to resources
     resources.forEach(({ path, integrations }) => {
       let integrationResource: IResource = labTodosManagementAPI.root.resourceForPath(path);
-      integrations.forEach(({ method, lambda }) => {
-        integrationResource.addMethod(method, lambda);
+      integrations.forEach(({ method, lambda, options }: any) => {
+        integrationResource.addMethod(method, lambda, {
+          authorizer: options?.authorizer,
+        });
       });
     });
 
