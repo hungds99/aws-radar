@@ -20,11 +20,12 @@ const ddbDocClient = DynamoDBDocument.from(client, translateConfig);
 export const seedCustomers = async (count: number) => {
   console.info('🎨 Seeding customers data...');
 
-  const parallelCount = count / 25;
+  const TRANSACTION_SIZE = 100;
+  const parallelCount = Math.ceil(count / TRANSACTION_SIZE);
 
   try {
-    for (let i = 0; i < parallelCount; i++) {
-      const customerTransactItems = Array.from({ length: 25 }, () => ({
+    for (let i = 0; i < count / TRANSACTION_SIZE; i++) {
+      const customerTransactItems = Array.from({ length: TRANSACTION_SIZE }, () => ({
         Put: {
           Item: generateCustomer(),
           TableName: 'labCataTable',

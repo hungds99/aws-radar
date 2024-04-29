@@ -5,7 +5,7 @@ const main = async () => {
   // const count = 40000;
   // generateCustomersCSVData(count);
 
-  const seedCustomerCount = 100;
+  const seedCustomerCount = 50000;
   await seedCustomers(seedCustomerCount);
 };
 
