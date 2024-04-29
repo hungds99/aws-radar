@@ -1,4 +1,4 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
@@ -17,6 +17,7 @@ export class DynamodbCataStack extends Stack {
       sortKey: { name: 'name', type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
       pointInTimeRecovery: true,
+      deletionProtection: true,
     });
 
     labCataTable.addLocalSecondaryIndex({
@@ -34,6 +35,15 @@ export class DynamodbCataStack extends Stack {
       indexName: 'threadIdPostedAtIndex',
       partitionKey: { name: 'threadId', type: AttributeType.STRING },
       sortKey: { name: 'postedAt', type: AttributeType.STRING },
+    });
+
+    new CfnOutput(this, 'labCataBucketOutput', {
+      key: 'labCataBucket',
+      value: labCataBucket.bucketName,
+    });
+    new CfnOutput(this, 'labCataTableOutput', {
+      key: 'labCataTable',
+      value: labCataTable.tableName,
     });
   }
 }
