@@ -1,0 +1,25 @@
+Resources:
+  MyLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Handler: index.handler
+      Role: arn:aws:iam::123456789012:role/lambda-ex
+      Code:
+        S3Bucket: my-bucket
+        S3Key: function.zip
+      Runtime: nodejs12.x
+      Timeout: 15
+      Policies:
+        - PolicyName: LambdaS3AccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                Resource: arn:aws:s3:::my-unique-bucket-name/*
+  MyS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: my-unique-bucket-name
