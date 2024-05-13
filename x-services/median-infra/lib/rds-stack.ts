@@ -1,4 +1,4 @@
-import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Port, SecurityGroup, SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { DatabaseInstance, DatabaseInstanceEngine } from 'aws-cdk-lib/aws-rds';
 import { Construct } from 'constructs';
@@ -26,6 +26,9 @@ export class RdsStack extends Stack {
       vpc: props.vpc,
       vpcSubnets: { subnetType: SubnetType.PRIVATE_ISOLATED },
       securityGroups: [postgresSG],
+      deleteAutomatedBackups: false,
+      deletionProtection: false,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     // Output the RDS endpoint
