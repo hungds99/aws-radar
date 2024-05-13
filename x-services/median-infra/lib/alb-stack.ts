@@ -16,7 +16,9 @@ import {
   ApplicationLoadBalancer,
   ApplicationProtocol,
   ApplicationTargetGroup,
+  ListenerAction,
   ListenerCertificate,
+  ListenerCondition,
   TargetType,
 } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Construct } from 'constructs';
@@ -56,9 +58,16 @@ export class AlbStack extends Stack {
     const albHttpListener = alb.addListener('MedianALBListener', {
       port: 80,
       protocol: ApplicationProtocol.HTTP,
+      defaultTargetGroups: [targetGroup],
     });
-    albHttpListener.addTargetGroups('AddTargetGroup', {
-      targetGroups: [targetGroup],
+    albHttpListener.addAction('MedianALBHttpListenerRule', {
+      priority: 1,
+      conditions: [ListenerCondition.pathPatterns(['*'])],
+      action: ListenerAction.redirect({
+        protocol: 'HTTPS',
+        port: '443',
+        permanent: true,
+      }),
     });
 
     const httpsListenerCertificate = ListenerCertificate.fromArn(
@@ -81,6 +90,13 @@ export class AlbStack extends Stack {
     });
     ec2SG.addIngressRule(albSG, Port.tcp(80), 'Allow HTTP traffic from ALB');
 
+    const bastionHostSG = SecurityGroup.fromSecurityGroupId(
+      this,
+      'MedianBastionHostSG',
+      'sg-0d6ac69c780c704ef',
+    );
+    ec2SG.addIngressRule(bastionHostSG, Port.tcp(22), 'Allow SSH traffic from Bastion Host');
+
     // Get KeyPair
     const ec2KeyPair = KeyPair.fromKeyPairName(this, 'MedianKeyPair', 'median-key-pair');
     // User data
@@ -98,7 +114,7 @@ export class AlbStack extends Stack {
       launchTemplateName: 'MedianEC2LaunchTemplate',
       machineImage: MachineImage.genericLinux(
         {
-          'ap-southeast-1': 'ami-02dcd6051cdd9671b',
+          'ap-southeast-1': 'ami-0fb13eee4862ee6d4',
         },
         {
           userData: ec2UserData,
@@ -126,6 +142,11 @@ export class AlbStack extends Stack {
       key: 'MedianALBDNSName',
       exportName: 'MedianALBDNSName',
       value: alb.loadBalancerDnsName,
+    });
+    new CfnOutput(this, 'MedianEC2TemplateVersion', {
+      key: 'MedianEC2TemplateVersion',
+      exportName: 'MedianEC2TemplateVersion',
+      value: ec2LaunchTemplate.versionNumber,
     });
   }
 }
