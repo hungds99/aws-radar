@@ -16,6 +16,7 @@ import {
   ApplicationLoadBalancer,
   ApplicationProtocol,
   ApplicationTargetGroup,
+  ListenerCertificate,
   TargetType,
 } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Construct } from 'constructs';
@@ -36,6 +37,15 @@ export class AlbStack extends Stack {
     albSG.addIngressRule(Peer.anyIpv4(), Port.tcp(80), 'Allow HTTP traffic');
     albSG.addIngressRule(Peer.anyIpv4(), Port.tcp(443), 'Allow HTTPS traffic');
 
+    // Create a target group
+    const targetGroup = new ApplicationTargetGroup(this, 'MedianTargetGroup', {
+      targetGroupName: 'MedianTargetGroup',
+      port: 80,
+      protocol: ApplicationProtocol.HTTP,
+      vpc: props.vpc,
+      targetType: TargetType.INSTANCE,
+    });
+
     // Create an Alb
     const alb = new ApplicationLoadBalancer(this, 'MedianALB', {
       loadBalancerName: 'MedianALB',
@@ -47,27 +57,21 @@ export class AlbStack extends Stack {
       port: 80,
       protocol: ApplicationProtocol.HTTP,
     });
-    // const albHttpsListener = alb.addListener('MedianALBListenerHTTPS', {
-    //   port: 443,
-    //   protocol: ApplicationProtocol.HTTPS,
-    // });
-
-    // Create a target group
-    const targetGroup = new ApplicationTargetGroup(this, 'MedianTargetGroup', {
-      targetGroupName: 'MedianTargetGroup',
-      port: 80,
-      protocol: ApplicationProtocol.HTTP,
-      vpc: props.vpc,
-      targetType: TargetType.INSTANCE,
-    });
-
-    // Add the target group to the listeners
     albHttpListener.addTargetGroups('AddTargetGroup', {
       targetGroups: [targetGroup],
     });
-    // albHttpsListener.addTargetGroups('AddTargetGroup', {
-    //   targetGroups: [targetGroup],
-    // });
+
+    const httpsListenerCertificate = ListenerCertificate.fromArn(
+      'arn:aws:acm:ap-southeast-1:046397301718:certificate/d006d91a-71d5-4940-8fcf-816674b88903',
+    );
+    const albHttpsListener = alb.addListener('MedianALBListenerHTTPS', {
+      port: 443,
+      protocol: ApplicationProtocol.HTTPS,
+      certificates: [httpsListenerCertificate],
+    });
+    albHttpsListener.addTargetGroups('AddTargetGroup', {
+      targetGroups: [targetGroup],
+    });
 
     // EC2 security group
     const ec2SG = new SecurityGroup(this, 'MedianEC2SG', {
