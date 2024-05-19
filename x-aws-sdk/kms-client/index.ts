@@ -10,7 +10,7 @@ const main = async () => {
   console.log(dataKey);
 
   const myData = Buffer.from('Hello world !!!');
-  const encryptedDataKey = await encryptDataKey(KEY_ID, myData);
+  const encryptedDataKey = await encryptDataKey(KEY_ID, dataKey.Plaintext!);
   console.log(encryptedDataKey);
 
   const decryptedDataKey = await decryptDataKey(KEY_ID, dataKey.CiphertextBlob!);
