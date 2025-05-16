@@ -9,7 +9,7 @@ async function sendClickstreamData() {
     const clickstreamData = {
       userId: 'user123',
       timestamp: new Date().toISOString(),
-      event: 'click',
+      event: 'pageView',
       details: {
         page: 'home',
         element: 'button',
