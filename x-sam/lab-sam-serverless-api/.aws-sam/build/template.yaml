@@ -26,7 +26,8 @@ Resources:
   getAllItemsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/get-all-items.getAllItemsHandler
+      CodeUri: getAllItemsFunction
+      Handler: get-all-items.getAllItemsHandler
       Runtime: nodejs22.x
       Architectures:
       - x86_64
@@ -48,13 +49,13 @@ Resources:
           Properties:
             Path: /
             Method: GET
-      CodeUri: getAllItemsFunction
     Metadata:
       SamResourceId: getAllItemsFunction
   getByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/get-by-id.getByIdHandler
+      CodeUri: getByIdFunction
+      Handler: get-by-id.getByIdHandler
       Runtime: nodejs22.x
       Architectures:
       - x86_64
@@ -76,13 +77,13 @@ Resources:
           Properties:
             Path: /{id}
             Method: GET
-      CodeUri: getByIdFunction
     Metadata:
       SamResourceId: getByIdFunction
   putItemFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/put-item.putItemHandler
+      CodeUri: putItemFunction
+      Handler: put-item.putItemHandler
       Runtime: nodejs22.x
       Architectures:
       - x86_64
@@ -104,7 +105,6 @@ Resources:
           Properties:
             Path: /
             Method: POST
-      CodeUri: putItemFunction
     Metadata:
       SamResourceId: putItemFunction
   LabItemsTable:
