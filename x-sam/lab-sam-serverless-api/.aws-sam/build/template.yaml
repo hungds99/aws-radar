@@ -3,6 +3,26 @@ Description: lab-sam-serverless-api
 Transform:
 - AWS::Serverless-2016-10-31
 Resources:
+  helloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      InlineCode: "exports.helloWorldHandler = async (event) => {\n  return {\n  \
+        \  statusCode: 200,\n    body: JSON.stringify({ message: 'Hello World!' })\n\
+        \  };\n};\n"
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to return a Hello World
+        message.
+      Handler: index.helloWorldHandler
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: GET
   getAllItemsFunction:
     Type: AWS::Serverless::Function
     Properties:
